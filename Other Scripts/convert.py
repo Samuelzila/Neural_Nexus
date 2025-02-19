@@ -14,7 +14,8 @@ for i in conversion_table:
 
 
 def to_csv(data):
-    df = pd.DataFrame(columns=[i for i in range(28*28)] + ["label"])
+    df = {i: [] for i in range(28*28)}
+    df["label"] = []
 
     for image, label, writer in zip(*data):
         # Because the label is an array with one element.
@@ -24,10 +25,11 @@ def to_csv(data):
         # Transpose image to be easier to handle with numpy (now row major instead of column major)
         image = image.reshape(28, 28).T.flatten()
 
-        df = pd.concat(
-            [pd.DataFrame([[i for i in image]+[chr(ascii)]], columns=df.columns), df], ignore_index=True)
+        for i, e in enumerate(image):
+            df[i].append(e)
+        df["label"].append(chr(ascii))
 
-    return df
+    return pd.DataFrame(df)
 
 
 training = to_csv(training)
