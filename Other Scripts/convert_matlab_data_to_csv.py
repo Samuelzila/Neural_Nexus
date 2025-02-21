@@ -15,8 +15,8 @@ for i in conversion_table:
 
 
 def to_dataframe(data):
-    df = {str(i): [] for i in range(28*28)}
-    df["label"] = []
+    image_df = {str(i): [] for i in range(28*28)}
+    label_df = {"label": []}
 
     count = 0
     for image, label, writer in zip(*data):
@@ -28,8 +28,8 @@ def to_dataframe(data):
         image = image.reshape(28, 28).T.flatten()
 
         for i, e in enumerate(image):
-            df[str(i)].append(e)
-        df["label"].append(chr(ascii))
+            image_df[str(i)].append(e)
+        label_df["label"].append(chr(ascii))
 
         count += 1
         print(count)
@@ -37,11 +37,13 @@ def to_dataframe(data):
         # if count > 10000:
         #     break
 
-    return pl.DataFrame(df)
+    return pl.DataFrame(image_df), pl.DataFrame(label_df)
 
 
-training = to_dataframe(training)
-training.write_csv("training.csv")
+trainingX, trainingY = to_dataframe(training)
+trainingX.write_csv("training_data.csv", include_header=False)
+trainingY.write_csv("training_labels.csv", include_header=False)
 
-# test = to_dataframe(test)
-# test.write_csv("test.csv")
+testX, testY = to_dataframe(test)
+testX.write_csv("test_data.csv", include_header=False)
+testY.write_csv("test_labels.csv", include_header=False)
