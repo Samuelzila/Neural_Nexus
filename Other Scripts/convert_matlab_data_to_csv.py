@@ -23,13 +23,12 @@ def to_dataframe(data):
         # Because the label is an array with one element.
         label = label[0]
 
-        ascii = conversion_dict[label]
         # Transpose image to be easier to handle with numpy (now row major instead of column major)
         image = image.reshape(28, 28).T.flatten()
 
         for i, e in enumerate(image):
             image_df[str(i)].append(e)
-        label_df["label"].append(chr(ascii))
+        label_df["label"].append(label)
 
         count += 1
         print(count)
