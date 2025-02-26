@@ -1,7 +1,7 @@
 import polars as pl
 import scipy as sp
 
-data = sp.io.loadmat("./emnist-byclass.mat")["dataset"][0][0]
+data = sp.io.loadmat("./emnist-bymerge.mat")["dataset"][0][0]
 
 training = data[0][0][0]
 test = data[1][0][0]
@@ -11,7 +11,7 @@ conversion_table = data[2]
 # Association dictionary between EMNIST labels and ascii.
 conversion_dict = {}
 for i in conversion_table:
-    conversion_dict[i[0]] = i[1]
+    conversion_dict[int(i[0])] = chr(i[1])
 
 
 def to_dataframe(data):
@@ -46,3 +46,5 @@ trainingY.write_csv("training_labels.csv", include_header=False)
 testX, testY = to_dataframe(test)
 testX.write_csv("test_data.csv", include_header=False)
 testY.write_csv("test_labels.csv", include_header=False)
+
+print(conversion_dict)
