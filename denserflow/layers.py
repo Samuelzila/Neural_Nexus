@@ -7,21 +7,29 @@ def neuron_activation(name):
     """
     match name:
         case "relu":
-            return relu
+            return relu()
         case "softmax":
-            return softmax
+            return softmax()
         case "sigmoid":
-            return sigmoid
+            return sigmoid()
         case None:
-            return identity
+            return identity()
 
 
-def identity(inputs):
-    return inputs
+class identity:
+    def __call__(self, inputs):
+        return inputs
 
 
-def relu(inputs):
-    return np.maximum(0, inputs)
+class relu:
+    def __call__(inputs):
+        return np.maximum(0, inputs)
+
+    def backpropagation(dvalues):
+        dReLU = dvalues.copy()
+        dReLU[dvalues <= 0] = 0
+
+        return dReLU
 
 
 def softmax(inputs):
@@ -38,7 +46,7 @@ class Layer:
     Abstract layer class, to be used as a parent.
     """
 
-    def forward(self, inputs):
+    def __call__(self, inputs):
         """
         The forward pass is the calculation that is done on the data.
         It takes the inputs of the previous layer and outputs the values of its own, in a numpy array.
@@ -58,8 +66,19 @@ class Dense(Layer):
         self.activation = activation
 
     def __call__(self, inputs):
+        self.inputs = inputs
         if self.weights is None:
             self.weights = np.random.rand(inputs.shape[1], self.nb_neurons)
 
         output = np.dot(inputs, self.weights) + self.biaises
         return neuron_activation(self.activation)(output)
+
+    def backpropagation(self, dvalues):
+        dactivation = neuron_activation(
+            self.activation).backpropagation(dvalues)
+
+        dinputs = np.dot(dactivation, self.weights.T)
+
+        dweights = np.dot(self.inputs.T, dactivation)
+
+        dbiaises = np.sum(dactivation, axis=0, keepdims=True)
