@@ -6,8 +6,6 @@ import tensorflow as tf
 import numpy as np
 import os
 
-#lol
-
 
 fenetre = Tk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
