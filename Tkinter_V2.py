@@ -13,11 +13,11 @@ fenetre.title("Reconnaissance de chiffres manuscrits")
 MainFrame = Frame(fenetre, bg="white", borderwidth=2, relief="ridge", width=768, height=576)
 MainFrame.pack(padx=10, pady=10)
 
-# Charger et redimensionner les images avec `thumbnail()`  "C:\Users\seben\OneDrive\Bureau\Tout\École\ia\projet-d-int-gration-equipe-a\denserflow\image\Phase(-15).png"
+# Charger et redimensionner les images avec `thumbnail()`  "C:\Users\seben\OneDrive\Bureau\Tout\École\ia\projet-d-int-gration-equipe-a\image uncanny"
 def charger_images():
     images = {}
     for i in range(-15, 13):  # Suppose que tu as des images de -10 à 10
-        chemin = f"C:/Users/seben/OneDrive/Bureau/Tout/École/ia/projet-d-int-gration-equipe-a/denserflow/image/Phase({i}).png"
+        chemin = f"C:/Users/seben/OneDrive/Bureau/Tout/École/ia/projet-d-int-gration-equipe-a/image uncanny/Phase({i}).png"
         if os.path.exists(chemin):
             # Charger l'image avec Pillow
             img = Image.open(chemin)
