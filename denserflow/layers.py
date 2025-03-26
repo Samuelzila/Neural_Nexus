@@ -82,3 +82,42 @@ class Dense(Layer):
         dweights = np.dot(self.inputs.T, dactivation)
 
         dbiaises = np.sum(dactivation, axis=0, keepdims=True)
+
+    def to_dict(self):
+        """
+        Returns the object as a dict
+        """
+        return {
+            "type": "dense",
+            "biaises": self.biaises.tolist(),
+            "weights": self.weights.tolist(),
+            "nb_neurons": self.nb_neurons,
+            "activation": self.activation
+        }
+
+    @classmethod
+    def from_dict(cls, layer_dict):
+        """
+        Layer constructor from dictionary
+        """
+        layer = cls(layer_dict["nb_neurons"],
+                    activation=layer_dict["activation"])
+
+        layer.biaises = np.array(layer_dict["biaises"])
+        layer.weights = np.array(layer_dict["weights"])
+
+        return layer
+
+
+layer_type_dict = {
+    "dense": Dense
+}
+
+
+def from_dict(layer_dict):
+    """
+    Converts a dict into a layer object
+    """
+    layer = layer_type_dict.get(layer_dict["type"])
+
+    return layer.from_dict(layer_dict)

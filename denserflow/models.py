@@ -1,3 +1,7 @@
+from . import layers
+import json
+
+
 class Sequential:
     """
     A sequential model takes an array of layers as a parameter. The layers are going to be used one after the other.
@@ -11,3 +15,43 @@ class Sequential:
             inputs = layer(inputs)
 
         return inputs
+
+    def save(self, path):
+        """
+        Save the model to the path using a custom json format
+        """
+        with open(path, 'w') as file:
+            file.write(json.dumps(self.to_dict()))
+
+    def to_dict(self):
+        """
+        Returns the model as a dictionary
+        """
+        return {
+            "type": "sequential",
+            "layers": [layer.to_dict() for layer in self.layers]
+        }
+
+    @classmethod
+    def from_dict(cls, layer_dicts):
+        layers_arr = []
+        for layer_dict in layer_dicts:
+            layers_arr.append(layers.from_dict(layer_dict))
+        return cls(layers_arr)
+
+
+model_type_dict = {
+    "sequential": Sequential
+}
+
+
+def load_model(path):
+    """
+    Loads a model from a json file
+    """
+    with open(path) as file:
+        obj = json.load(file)
+
+    model_class = model_type_dict.get(obj["type"])
+
+    return model_class.from_dict(obj["layers"])
