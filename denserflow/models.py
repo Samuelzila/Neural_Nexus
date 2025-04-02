@@ -16,6 +16,25 @@ class Sequential:
 
         return inputs
 
+    def compile():
+        pass
+
+    def fit(self, X, y, learning_rate=0.01, epochs=1000):
+        for epoch in range(epochs):
+            # Passe avant (forward pass)
+
+            y_pred = self(X)
+
+            loss_function = layers.CategoricalCrossEntropy()
+
+            loss = loss_function(y_pred, y)
+
+            grad = loss_function.backpropagation(y_pred, y)
+
+            # Parcours des couches en sens inverse pour rétropropager l'erreur
+            for layer in reversed(self.layers):
+                grad = layer.backpropagation(grad, learning_rate)
+
     def save(self, path):
         """
         Save the model to the path using a custom json format

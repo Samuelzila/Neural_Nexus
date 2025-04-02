@@ -54,7 +54,7 @@ def load_from_csv(datasetName):
     data = pl.scan_csv(f"./{datasetName}_data.csv", has_header=False)
     labels = pl.scan_csv(f"./{datasetName}_labels.csv", has_header=False)
 
-    return data.collect().to_numpy(order="c"), labels.collect().to_numpy(order="c")
+    return data.collect().to_numpy(order="c"), labels.collect().to_numpy(order="c").flatten()
 
 
 def load_from_csv_batched(datasetName, batch_size=50000):
@@ -76,7 +76,7 @@ def load_from_csv_batched(datasetName, batch_size=50000):
             labels = pl.scan_csv(
                 f"./{datasetName}_labels.csv", has_header=False, skip_rows_after_header=start, n_rows=batch_size)
             start += batch_size
-            yield data.collect().to_numpy(order="c"), labels.collect().to_numpy(order="c")
+            yield data.collect().to_numpy(order="c"), labels.collect().to_numpy(order="c").flatten()
         except:
             break
 
