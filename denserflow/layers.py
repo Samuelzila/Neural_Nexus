@@ -209,8 +209,8 @@ class Dense(Layer):
                 np.random.randn(inputs.shape[1], self.nb_neurons)
         # Calcul de la sortie linéaire
         output = np.dot(inputs, self.weights) + self.biaises
-        self.output = self.activation(output)
-        return self.output
+        output = self.activation(output)
+        return output
 
     def backpropagation(self, dvalues, learning_rate):
         # Calcul du gradient via la dérivée de la fonction d'activation.
@@ -221,7 +221,7 @@ class Dense(Layer):
         dbiaises = np.sum(dactivation, axis=0, keepdims=True)
 
         # Propagation du gradient vers la couche précédente.
-        self.dinputs = np.dot(dactivation, self.weights.T)
+        dinputs = np.dot(dactivation, self.weights.T)
 
         # Mise à jour des paramètres de la couche.
         self.weights -= learning_rate * dweights
@@ -229,7 +229,7 @@ class Dense(Layer):
         # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
         self.biaises -= learning_rate * dbiaises[0]
 
-        return self.dinputs
+        return dinputs
 
     def to_dict(self):
         """
