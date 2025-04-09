@@ -58,6 +58,9 @@ class Sequential:
             layers_arr.append(layers.from_dict(layer_dict))
         return cls(layers_arr)
 
+    def predict(self, X):
+        return self(X)
+
 
 model_type_dict = {
     "sequential": Sequential
