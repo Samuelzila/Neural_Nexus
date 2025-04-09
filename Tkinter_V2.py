@@ -5,7 +5,6 @@ import numpy as np
 import os
 import string
 import time
-
 import emnist
 import denserflow as tf
 from denserflow import models
@@ -14,11 +13,11 @@ from denserflow import models
 fenetre = tk.Tk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
 
-main_frame = tk.Frame(fenetre, bg="white", borderwidth=2, relief="ridge", width=768, height=576)
+main_frame = tk.Frame(fenetre, bg="white", borderwidth=2, relief="ridge", width=878, height=576)
 main_frame.pack(padx=10, pady=10)
 
 # === Résultats affichés === #
-result_frame = tk.Frame(main_frame, bg="white", borderwidth=2, relief="groove", width=200, height=350)
+result_frame = tk.Frame(main_frame, bg="white", borderwidth=2, relief="groove", width=300, height=500)
 result_frame.pack(side='right', fill='y', expand=True, padx=10, pady=10)
 
 tk.Label(result_frame, text="Prédiction", font=("Arial", 36), bg="white", fg="black").pack(side='top', pady=10)
@@ -31,7 +30,7 @@ class DrawingApp(tk.Frame):
         super().__init__(parent)
         self.model = model
         self.canvas_width = 500
-        self.canvas_height = 350
+        self.canvas_height = 500
 
         self.canvas = tk.Canvas(self, width=self.canvas_width, height=self.canvas_height, bg='white')
         self.canvas.pack()
@@ -47,10 +46,18 @@ class DrawingApp(tk.Frame):
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
 
     def draw_on_canvas(self, event):
-        if self.last_x is not None and self.last_y is not None:
-            self.canvas.create_line(self.last_x, self.last_y, event.x, event.y, fill="black", width=32)
-            self.draw.line([self.last_x, self.last_y, event.x, event.y], fill=0, width=32)
+        radius = 8  # rayon du cercle, donc diamètre = 32 comme la largeur de ta ligne
+        x0, y0 = event.x - radius, event.y - radius
+        x1, y1 = event.x + radius, event.y + radius
+
+        # Dessine sur le canvas tkinter
+        self.canvas.create_oval(x0, y0, x1, y1, fill="black", outline="black")
+
+        # Dessine sur l'image (noir = 0 si image en niveaux de gris)
+        self.draw.ellipse([x0, y0, x1, y1], fill=0)
+
         self.last_x, self.last_y = event.x, event.y
+
 
     def on_release(self, event):
         self.last_x, self.last_y = None, None
