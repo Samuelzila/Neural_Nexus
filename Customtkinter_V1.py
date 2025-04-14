@@ -7,37 +7,36 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Configuration de l’apparence
-ctk.set_appearance_mode("dark")  # ou "light", "system"
+ctk.set_appearance_mode("black")  # ou "light", "system"
 ctk.set_default_color_theme("blue")  # Thème global
 
 # === Configuration de la fenêtre principale === #
 fenetre = ctk.CTk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
 fenetre.geometry("700x700")
-fenetre.resizable(False, False)
-fenetre._fg_color = 'black'
+fenetre._fg_color = 'gray'
 
-main_frame = ctk.CTkFrame(fenetre, width=700, height=700, corner_radius=0,fg_color='black')
+main_frame = ctk.CTkFrame(fenetre, width=700, height=700, corner_radius=0,fg_color='gray')
 main_frame.pack()
 
 # === Résultats affichés (1, 1) === #
-result_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='black')
+result_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='gray')
 result_frame.grid(row=0, column=1)
 
-ctk.CTkLabel(result_frame, text="Prédiction", font=("Arial", 36),text_color='cyan',fg_color='black').pack(expand=True)
-result_label = ctk.CTkLabel(result_frame, text="?", font=("Arial", 116), width=350, height=350, text_color='cyan',fg_color='black')
+#ctk.CTkLabel(result_frame, text="Prédiction", font=("Arial", 36),text_color='cyan',fg_color='black').pack(expand=True)
+result_label = ctk.CTkLabel(result_frame, text="?", font=("Arial", 116), width=350, height=350, text_color='cyan',fg_color='gray')
 result_label.pack(expand=True)
 
 # === Canvas pour le dessin (-1, 1) === #
-canvas_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='black')
+canvas_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='gray')
 canvas_frame.grid(row=0, column=0)
 
 # === Frame bleu (-1, -1) === #
-input_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='black')
+input_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='gray')
 input_frame.grid(row=1, column=0)
 
 # === Frame vert (1, -1) === #
-statistics_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='black')
+statistics_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='gray')
 statistics_frame.grid(row=1, column=1)
 
 # === Classe pour le dessin et prédiction === #
@@ -105,13 +104,13 @@ class DrawingApp(ctk.CTkFrame):
         dpi = 200
         figsize = (350 / dpi, 350 / dpi)
         fig = Figure(figsize=figsize, dpi=dpi)
-        fig.patch.set_facecolor('black')
+        fig.patch.set_facecolor('gray')
 
         ax = fig.add_subplot(111)
-        ax.set_facecolor('black')
+        ax.set_facecolor('gray')
 
-        segment_colors = ['#00ffff', '#e40800', '#f8ff69', '#03008e', '#f639ff', '#ff7c41']
-        textprops = {'fontsize': 6, 'color': 'gray'}
+        segment_colors = ['#00ffe0', '#e40800', '#f8ff69', '#03008e', '#f639ff', '#ff7c41']
+        textprops = {'fontsize': 6, 'color': 'black'}
         ax.pie(top_probabilities, labels=top_labels, autopct='%1.1f%%',
                startangle=90, colors=segment_colors, textprops=textprops)
         ax.axis('equal')
