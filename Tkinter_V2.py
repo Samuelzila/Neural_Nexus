@@ -1,154 +1,89 @@
-from tkinter import *
 import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk, ImageDraw
-import tensorflow as tf
 import numpy as np
 import os
 import string
+import time
+import emnist
+import denserflow as tf
+from denserflow import models
 
-# Configuration de la fenêtre principale
-fenetre = Tk()
+# === Configuration de la fenêtre principale === #
+fenetre = tk.Tk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
 
-MainFrame = Frame(fenetre, bg="white", borderwidth=2, relief="ridge", width=768, height=576)
-MainFrame.pack(padx=10, pady=10)
+main_frame = tk.Frame(fenetre, bg="white", borderwidth=2, relief="ridge", width=878, height=576)
+main_frame.pack(padx=10, pady=10)
 
-# Charger et redimensionner les images
+# === Résultats affichés === #
+result_frame = tk.Frame(main_frame, bg="white", borderwidth=2, relief="groove", width=300, height=500)
+result_frame.pack(side='right', fill='y', expand=True, padx=10, pady=10)
 
-def charger_images():
-    images = {}
-    for i in range(-15, 13):
-        chemin = f"C:/Users/seben/OneDrive/Bureau/Tout/École/ia/projet-d-int-gration-equipe-a/image uncanny/Phase({i}).png"
-        if os.path.exists(chemin):
-            img = Image.open(chemin)
-            img.thumbnail((200, 200))
-            images[i] = ImageTk.PhotoImage(img)
-        else:
-            print(f"Image manquante : {chemin}")
-    return images
+tk.Label(result_frame, text="Prédiction", font=("Arial", 36), bg="white", fg="black").pack(side='top', pady=10)
+result_label = tk.Label(result_frame, text=" ?", font=("Arial", 116), bg="white", fg="black")
+result_label.pack(expand=True, pady=10)
 
-images = charger_images()
-
-# Variables globales
-chiffre = 0
-
-# Fonctions principales
-
-def choix(valeur):
-    global chiffre
-    chiffre += valeur
-    print(f"Chiffre actuel : {chiffre}")
-    actualiser_image()
-
-def actualiser_image():
-    if chiffre in images:
-        label_image.config(image=images[chiffre])
-    else:
-        print(f"Aucune image pour la valeur : {chiffre}")
-
-# Création des widgets
-label_image = tk.Label(MainFrame)
-label_image.pack(side='right', expand=True, padx=10, pady=10)
-
-result_frame = Frame(MainFrame, bg="white", borderwidth=2, relief=GROOVE, width=200, height=350)
-result_frame.pack(side='right', fill=Y, expand=True, padx=10, pady=10)
-
-result_label1 = Label(result_frame, text="Prédiction", font=("Arial", 36), bg="white", fg="black")
-result_label1.pack(side='top', expand=True, pady=10, padx=10)
-
-result_label2 = Label(result_frame, text=" ? ", font=("Arial", 116), bg="white", fg="black")
-result_label2.pack(expand=True, pady=10, padx=10)
-
-# Création des boutons Vrai/Faux
-
-def creer_bouton_choix(texte, couleur, valeur, parent_frame):
-    bouton = Button(parent_frame, text=texte, command=lambda: choix(valeur), bg="white", fg="black", font=(12), relief="ridge", width=6, height=2)
-    bouton.pack(side='left' if valeur == -1 else 'right', expand=True, padx=10, pady=10)
-
-    def on_enter(e):
-        bouton.config(fg="black" if valeur == -1 else "black", bg=couleur, highlightbackground="black")
-    def on_leave(e):
-        bouton.config(fg="black", bg="white", highlightthickness=0)
-
-    bouton.bind("<Enter>", on_enter)
-    bouton.bind("<Leave>", on_leave)
-
-creer_bouton_choix("Vrai", "lime", -1, result_frame)
-creer_bouton_choix("Faux", "red", 1, result_frame)
-
-# Classe pour le canvas
-
+# === Classe pour le dessin et prédiction === #
 class DrawingApp(tk.Frame):
     def __init__(self, parent, model):
         super().__init__(parent)
         self.model = model
         self.canvas_width = 500
-        self.canvas_height = 350
+        self.canvas_height = 500
 
         self.canvas = tk.Canvas(self, width=self.canvas_width, height=self.canvas_height, bg='white')
         self.canvas.pack()
 
-        self.creer_boutons()
-        self.lier_evenements()
+        self.image = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
+        self.draw = ImageDraw.Draw(self.image)
 
-        self.image1 = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
-        self.draw1 = ImageDraw.Draw(self.image1)
         self.last_x, self.last_y = None, None
+        self.bind_events()
 
-    def creer_boutons(self):
-        self.creer_bouton("❌ Fermer", self.quit, "red","black")
-        self.creer_bouton("🔎 Prédire", self.predict_digit, "lime","white")
-        self.creer_bouton("🧹 Effacer", self.clear_canvas, "blue","yellow")
+    def bind_events(self):
+        self.canvas.bind("<B1-Motion>", self.draw_on_canvas)
+        self.canvas.bind("<ButtonRelease-1>", self.on_release)
 
-    def creer_bouton(self, texte, commande, couleur_bg, couleur_fg):
-        bouton = Button(self, text=texte, command=commande, bg="white", fg="black", font=(12), relief="ridge", width=12, height=2)
-        bouton.pack(side='left', expand=True, padx=10, pady=10)
+    def draw_on_canvas(self, event):
+        radius = 8  # rayon du cercle, donc diamètre = 32 comme la largeur de ta ligne
+        x0, y0 = event.x - radius, event.y - radius
+        x1, y1 = event.x + radius, event.y + radius
 
-        def on_enter(e):
-            bouton.config(bg=couleur_bg, highlightbackground="black",fg=couleur_fg)
-        def on_leave(e):
-            bouton.config(bg="white", highlightthickness=0,fg="black")
+        # Dessine sur le canvas tkinter
+        self.canvas.create_oval(x0, y0, x1, y1, fill="black", outline="black")
 
-        bouton.bind("<Enter>", on_enter)
-        bouton.bind("<Leave>", on_leave)
+        # Dessine sur l'image (noir = 0 si image en niveaux de gris)
+        self.draw.ellipse([x0, y0, x1, y1], fill=0)
 
-    def lier_evenements(self):
-        self.canvas.bind("<B1-Motion>", self.draw)
-        self.canvas.bind("<ButtonRelease-1>", self.reset)
+        self.last_x, self.last_y = event.x, event.y
 
-    def draw(self, event):
-        x, y = event.x, event.y
-        if self.last_x is not None and self.last_y is not None:
-            self.canvas.create_line(self.last_x, self.last_y, x, y, fill="black", width=8)
-            self.draw1.line([self.last_x, self.last_y, x, y], fill=0, width=8)
-        self.last_x, self.last_y = x, y
 
-    def reset(self, event):
+    def on_release(self, event):
         self.last_x, self.last_y = None, None
+        try: self.predict()
+        except: 
+            self.canvas.after(1000, self.clear_canvas)
+            result_label.config(text="?")    # Ignore les erreurs de prédiction si l'image est vide
+        self.canvas.after(1000, self.clear_canvas)
 
     def clear_canvas(self):
         self.canvas.delete("all")
-        self.image1 = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
-        self.draw1 = ImageDraw.Draw(self.image1)
-        result_label2.config(text="?")
+        self.image = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
+        self.draw = ImageDraw.Draw(self.image)
 
-    def predict_digit(self):
-        img = self.image1.resize((28, 28))
-        img_array = np.array(img)
-        img_array = 255 - img_array
-        img_array = img_array / 255.0
-        img_array = img_array.reshape(1, 28, 28)
-        
-        prediction = self.model.predict(img_array)
-        predicted_digit = np.argmax(prediction)
-        result_label2.config(text=f"{predicted_digit}")
+    def predict(self):
+        import image_processing  # Import local pour éviter les imports inutiles au lancement
+        matrix = image_processing.format_matrix(np.array(self.image)).reshape(1, 784)
+        prediction = self.model(matrix)
+        digit = emnist.label_to_char(np.argmax(prediction))
+        result_label.config(text=f"{digit}")
 
-# Initialisation
-
+# === Point d'entrée principal === #
 def main():
-    model = tf.keras.models.load_model("mon_modele.h5")
-    app = DrawingApp(MainFrame, model)
-    app.pack(side=RIGHT)
+    model = models.load_model("NeuralNexus0,87.json")
+    app = DrawingApp(main_frame, model)
+    app.pack(side='right')
 
 if __name__ == "__main__":
     main()
