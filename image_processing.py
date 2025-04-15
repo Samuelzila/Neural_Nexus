@@ -34,7 +34,7 @@ def format_matrix(matrix, flatten=False):
     matrix = black_background(matrix)
 
     # Trim empty rows and columns
-    matrix = crop(matrix, padding=2, keep_centered=True)
+    matrix = crop(matrix, padding=2, keep_centered=False)
 
     # Make the matrix square, relative to its largest dimension.
     matrix = make_square(matrix)
