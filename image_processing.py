@@ -28,32 +28,60 @@ def format_matrix(matrix, flatten=False):
     flatten specifies if the final array should be flattened.
     """
 
-    matrix = white_balance(matrix)
+    matrix = white_balance(matrix, flatten=True)
 
     # Ensure that the background is black
     matrix = black_background(matrix)
 
+    matrix = center_image(matrix)
+
     # Trim empty rows and columns
-    matrix = crop(matrix, padding=2)
+    matrix = crop(matrix, padding=2, keep_centered=True)
 
     # Make the matrix square, relative to its largest dimension.
     matrix = make_square(matrix)
-
-    matrix = center_image(matrix)
 
     matrix = bicubic_resize(matrix, 28)
 
     return matrix.flatten() if flatten else matrix
 
 
-def crop(matrix, padding=0):
+def crop(matrix, padding=0, keep_centered=True):
     """
     Removes empty rows and columns from matrix.
     Padding tells how many empty rows and columns to leave on each side.
+    If keep cenetered is true, it won't crop in a way that would uncenter the image.
     """
     # Trim empty rows and columns
-    matrix = matrix[~np.all(matrix == 0, axis=1)]
-    matrix = matrix[:, ~np.all(matrix == 0, axis=0)]
+    # Find top rows
+    m, n = matrix.shape
+    for i in reversed(range(m)):
+        if np.all(matrix[:i+1] == 0):
+            argtop = i-1
+            break
+    # Find bottom row
+    for i in range(m):
+        if np.all(matrix[i:] == 0):
+            argbottom = i+1
+            break
+    # Find right columns
+    for i in reversed(range(n)):
+        if np.all(matrix[:, :i+1] == 0):
+            argright = i-1
+            break
+    # Find left columns
+    for i in range(n):
+        if np.all(matrix[:, i:] == 0):
+            argleft = i+1
+            break
+
+    # Trim the matrix
+    if not keep_centered:
+        matrix = matrix[argtop:argbottom+1, argright:argleft+1]
+    else:
+        argtb = min(argtop, m-argbottom)
+        argrl = min(argright, n-argleft)
+        matrix = matrix[argtb:m-argtb+1, argrl:n-argrl+1]
 
     # Add <padding> rows and columns on every side.
     matrix = np.append(matrix, np.zeros((padding, matrix.shape[1])), axis=0)
@@ -72,12 +100,16 @@ def make_square(matrix):
     η = max(m, n)  # Final dimensions.
     # Add rows if necessary
     if m < η:
-        rows = np.zeros((η-m, n))
+        rows = np.zeros((math.floor((η-m)/2), n))
         matrix = np.append(matrix, rows, axis=0)
+        rows = np.zeros((math.ceil((η-m)/2), n))
+        matrix = np.append(rows, matrix, axis=0)
     # Add columns if necessary
     if n < η:
-        cols = np.zeros((m, η-n))
+        cols = np.zeros((m, math.floor((η-n)/2)))
         matrix = np.append(matrix, cols, axis=1)
+        cols = np.zeros((m, math.ceil((η-n)/2)))
+        matrix = np.append(cols, matrix, axis=1)
 
     return matrix
 
@@ -97,14 +129,22 @@ def black_background(matrix):
     return matrix
 
 
-def white_balance(matrix):
+def white_balance(matrix, flatten=False):
     """
     Given an image matrix, make its lightest colour white and darkest one black. Adjust all other values in consequence.
+    If flatten is true, the colors will only be black and white.
     """
     lightest = np.max(matrix)
     darkest = np.min(matrix)
+    if not flatten:
+        return ((matrix-darkest)/(lightest-darkest)) * 255
 
-    return ((matrix-darkest)/(lightest-darkest)) * 255
+    middle = (darkest+lightest)/2
+    # Change light values to white
+    matrix[(matrix >= middle)] = 255
+    matrix[(matrix < middle)] = 0
+
+    return matrix
 
 
 def center_image(matrix):
@@ -148,3 +188,11 @@ def bicubic_resize(matrix, size_x):
     image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
 
     return np.array(image)
+
+
+image = matrix_from_path("./Screenshot_20250414_132400.png")
+matrix = format_matrix(image, flatten=False)
+
+
+plt.imshow(matrix, cmap="grey")
+plt.show()

@@ -1,4 +1,4 @@
-from . import layers
+from . import layers, optimizers
 import json
 
 
@@ -31,9 +31,11 @@ class Sequential:
 
             grad = loss_function.backpropagation(y_pred, y)
 
+            optimizer = optimizers.SGD(learning_rate)
+
             # Parcours des couches en sens inverse pour rétropropager l'erreur
             for layer in reversed(self.layers):
-                grad = layer.backpropagation(grad, learning_rate)
+                grad = layer.backpropagation(grad, optimizer=optimizer)
 
     def save(self, path):
         """
@@ -57,6 +59,9 @@ class Sequential:
         for layer_dict in layer_dicts:
             layers_arr.append(layers.from_dict(layer_dict))
         return cls(layers_arr)
+
+    def predict(self, X):
+        return self(X)
 
 
 model_type_dict = {

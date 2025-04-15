@@ -1,4 +1,5 @@
 import numpy as np
+from . import optimizers
 
 # [] est-ce que je devrais ajouter self à chacun des classes
 
@@ -82,7 +83,7 @@ class sigmoid:
 
 class Softmax:
     def __call__(self, inputs):
-        # TODO: Store data?
+        self.inputs = inputs
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
         self.output = exp_values / np.sum(exp_values, axis=1, keepdims=True)
         return self.output
@@ -199,7 +200,6 @@ class Dense(Layer):
     def __init__(self, nb_neurons, activation=None):
         self.biaises = np.zeros((1, nb_neurons))
         self.weights = None
-        self.nb_neurons = nb_neurons
         self.activation = neuron_activation(activation)()
 
     def __call__(self, inputs):
@@ -209,27 +209,29 @@ class Dense(Layer):
                 np.random.randn(inputs.shape[1], self.nb_neurons)
         # Calcul de la sortie linéaire
         output = np.dot(inputs, self.weights) + self.biaises
-        self.output = self.activation(output)
-        return self.output
+        output = self.activation(output)
+        return output
 
-    def backpropagation(self, dvalues, learning_rate):
+    def backpropagation(self, dvalues, optimizer=optimizers.SGD()):
         # Calcul du gradient via la dérivée de la fonction d'activation.
         # Ici, on utilise la méthode backpropagation définie pour l'activation choisie.
         dactivation = self.activation.backpropagation(dvalues)
         # Calcul des gradients pour les poids et biais.
-        dweights = np.dot(self.inputs.T, dactivation)
-        dbiaises = np.sum(dactivation, axis=0, keepdims=True)
+        self.dweights = np.dot(self.inputs.T, dactivation)
+        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
+        self.dbiaises = np.sum(dactivation, axis=0, keepdims=True)[0]
 
         # Propagation du gradient vers la couche précédente.
-        self.dinputs = np.dot(dactivation, self.weights.T)
+        dinputs = np.dot(dactivation, self.weights.T)
 
-        # Mise à jour des paramètres de la couche.
-        self.weights -= learning_rate * dweights
+        # Optimize this layer
+        optimizer.update_layer(self)
 
-        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
-        self.biaises -= learning_rate * dbiaises[0]
+        # Free memory
+        del self.dbiaises
+        del self.dweights
 
-        return self.dinputs
+        return dinputs
 
     def to_dict(self):
         """
