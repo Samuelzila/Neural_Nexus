@@ -6,7 +6,6 @@ from denserflow import models
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 # === Configuration de la fenêtre principale === #
 fenetre = tk.Tk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
