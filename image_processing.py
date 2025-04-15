@@ -33,13 +33,13 @@ def format_matrix(matrix, flatten=False):
     # Ensure that the background is black
     matrix = black_background(matrix)
 
+    matrix = center_image(matrix)
+
     # Trim empty rows and columns
-    matrix = crop(matrix, padding=2, keep_centered=False)
+    matrix = crop(matrix, padding=2, keep_centered=True)
 
     # Make the matrix square, relative to its largest dimension.
     matrix = make_square(matrix)
-
-    matrix = center_image(matrix)
 
     matrix = bicubic_resize(matrix, 28)
 
@@ -79,7 +79,9 @@ def crop(matrix, padding=0, keep_centered=True):
     if not keep_centered:
         matrix = matrix[argtop:argbottom+1, argright:argleft+1]
     else:
-        raise Exception
+        argtb = min(argtop, m-argbottom)
+        argrl = min(argright, n-argleft)
+        matrix = matrix[argtb:m-argtb+1, argrl:n-argrl+1]
 
     # Add <padding> rows and columns on every side.
     matrix = np.append(matrix, np.zeros((padding, matrix.shape[1])), axis=0)
@@ -98,12 +100,16 @@ def make_square(matrix):
     η = max(m, n)  # Final dimensions.
     # Add rows if necessary
     if m < η:
-        rows = np.zeros((η-m, n))
+        rows = np.zeros((math.floor((η-m)/2), n))
         matrix = np.append(matrix, rows, axis=0)
+        rows = np.zeros((math.ceil((η-m)/2), n))
+        matrix = np.append(rows, matrix, axis=0)
     # Add columns if necessary
     if n < η:
-        cols = np.zeros((m, η-n))
+        cols = np.zeros((m, math.floor((η-n)/2)))
         matrix = np.append(matrix, cols, axis=1)
+        cols = np.zeros((m, math.ceil((η-n)/2)))
+        matrix = np.append(cols, matrix, axis=1)
 
     return matrix
 
