@@ -10,13 +10,9 @@ NeuralNexus = models.Sequential([
 ])
 
 for X, y in emnist.training_batched(100):
-    NeuralNexus.fit(X, y, learning_rate=0.01, epochs=50)
+    NeuralNexus.fit(X, y, optimizer=0.01, epochs=50)
+    break
 
-
-NeuralNexus.save("./NeuralNexus.json")
-
-NeuralNexus = models.load_model("./NeuralNexus.json")
-
-X, y = emnist.test()
-pred = np.argmax(NeuralNexus(X), axis=1)
-print(np.mean(pred == y))
+# X, y = emnist.test()
+# pred = np.argmax(NeuralNexus(X), axis=1)
+# print(np.mean(pred == y))

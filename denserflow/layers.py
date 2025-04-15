@@ -1,4 +1,5 @@
 import numpy as np
+from . import optimizers
 
 # [] est-ce que je devrais ajouter self à chacun des classes
 
@@ -199,7 +200,6 @@ class Dense(Layer):
     def __init__(self, nb_neurons, activation=None):
         self.biaises = np.zeros((1, nb_neurons))
         self.weights = None
-        self.nb_neurons = nb_neurons
         self.activation = neuron_activation(activation)()
 
     def __call__(self, inputs):
@@ -212,22 +212,24 @@ class Dense(Layer):
         output = self.activation(output)
         return output
 
-    def backpropagation(self, dvalues, learning_rate):
+    def backpropagation(self, dvalues, optimizer=optimizers.SGD()):
         # Calcul du gradient via la dérivée de la fonction d'activation.
         # Ici, on utilise la méthode backpropagation définie pour l'activation choisie.
         dactivation = self.activation.backpropagation(dvalues)
         # Calcul des gradients pour les poids et biais.
-        dweights = np.dot(self.inputs.T, dactivation)
-        dbiaises = np.sum(dactivation, axis=0, keepdims=True)
+        self.dweights = np.dot(self.inputs.T, dactivation)
+        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
+        self.dbiaises = np.sum(dactivation, axis=0, keepdims=True)[0]
 
         # Propagation du gradient vers la couche précédente.
         dinputs = np.dot(dactivation, self.weights.T)
 
-        # Mise à jour des paramètres de la couche.
-        self.weights -= learning_rate * dweights
+        # Optimize this layer
+        optimizer.update_layer(self)
 
-        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
-        self.biaises -= learning_rate * dbiaises[0]
+        # Free memory
+        del self.dbiaises
+        del self.dweights
 
         return dinputs
 
