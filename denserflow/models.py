@@ -16,10 +16,13 @@ class Sequential:
 
         return inputs
 
-    def compile():
-        pass
+    def compile(self, optimizer='sgd', loss="categorical_crossentropy"):
+        if isinstance(optimizer, str):
+            self.optimizer = optimizers.optimizer_type_dict.get(optimizer)
+        else:
+            self.optimizer = optimizer
 
-    def fit(self, X, y, learning_rate=0.01, epochs=1000):
+    def fit(self, X, y, epochs=1000):
         for epoch in range(epochs):
             # Passe avant (forward pass)
 
@@ -31,11 +34,11 @@ class Sequential:
 
             grad = loss_function.backpropagation(y_pred, y)
 
-            optimizer = optimizers.SGD(learning_rate)
-
+            self.optimizer.pre_update()
             # Parcours des couches en sens inverse pour rétropropager l'erreur
             for layer in reversed(self.layers):
-                grad = layer.backpropagation(grad, optimizer=optimizer)
+                grad = layer.backpropagation(grad, optimizer=self.optimizer)
+            self.optimizer.post_update()
 
     def save(self, path):
         """

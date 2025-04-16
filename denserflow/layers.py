@@ -198,6 +198,7 @@ class Dense(Layer):
     """
 
     def __init__(self, nb_neurons, activation=None):
+        self.nb_neurons = nb_neurons
         self.biaises = np.zeros((1, nb_neurons))
         self.weights = None
         self.activation = neuron_activation(activation)()
