@@ -18,7 +18,7 @@ class Sequential:
 
     def compile(self, optimizer='sgd', loss="categorical_crossentropy"):
         if isinstance(optimizer, str):
-            self.optimizer = optimizers.optimizer_type_dict.get(optimizer)
+            self.optimizer = optimizers.optimizer_type_dict.get(optimizer)()
         else:
             self.optimizer = optimizer
 

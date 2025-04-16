@@ -27,26 +27,26 @@ class SGD:
         """
         # If momentum is used
         if self.momentum:
-            # Create momentum matrix for weights and biaises in the layer if they don't exist.
+            # Create momentum matrix for weights and biases in the layer if they don't exist.
             if not hasattr(layer, "weights_momentum"):
                 layer.weights_momentum = np.zeros_like(layer.weights)
-                layer.biaises_momentum = np.zeros_like(layer.biaises)
+                layer.biases_momentum = np.zeros_like(layer.biases)
 
             weight_neg_gradient = self.momentum * layer.weights_momentum - \
                 self.learning_rate * layer.dweights
             layer.weights_momentum = weight_neg_gradient
 
-            biais_neg_gradient = self.momentum * layer.biaises_momentum - \
-                self.learning_rate * layer.dbiaises
-            layer.biaises_momentum = biais_neg_gradient
+            bias_neg_gradient = self.momentum * layer.biases_momentum - \
+                self.learning_rate * layer.dbiases
+            layer.biases_momentum = bias_neg_gradient
         else:
             # Doing this in an else statement saves computation time,
             # even if mathematically equivalent to the above.
             weight_neg_gradient = -self.learning_rate * layer.dweights
-            biais_neg_gradient = -self.learning_rate * layer.dbiaises
+            bias_neg_gradient = -self.learning_rate * layer.dbiases
 
         layer.weights += weight_neg_gradient
-        layer.biaises += biais_neg_gradient
+        layer.biases += bias_neg_gradient
 
     def post_update(self):
         """
@@ -79,21 +79,21 @@ class AdaGrad:
 
         Some functionnalities like decaying need pre_update() and post_update().
         """
-        # Create cache matrix for weights and biaises in the layer if they don't exist.
+        # Create cache matrix for weights and biases in the layer if they don't exist.
         if not hasattr(layer, "weight_cache"):
             layer.weight_cache = np.zeros_like(layer.weights)
-            layer.biais_cache = np.zeros_like(layer.biaises)
+            layer.bias_cache = np.zeros_like(layer.biases)
 
         layer.weight_cache += layer.dweights**2
-        layer.biais += layer.dbiaises**2
+        layer.bias += layer.dbiases**2
 
         weight_neg_gradient = -self.learning_rate * \
             layer.dweights/(np.sqrt(layer.weight_cache)+self.epsilon)
-        biais_neg_gradient = -self.learning_rate * \
-            layer.dbiaises/(np.sqrt(layer.biais_cache)+self.epsilon)
+        bias_neg_gradient = -self.learning_rate * \
+            layer.dbiases/(np.sqrt(layer.bias_cache)+self.epsilon)
 
         layer.weights += weight_neg_gradient
-        layer.biaises += biais_neg_gradient
+        layer.biases += bias_neg_gradient
 
     def post_update(self):
         """
@@ -127,23 +127,23 @@ class RMSprop:
 
         Some functionnalities like decaying need pre_update() and post_update().
         """
-        # Create cache matrix for weights and biaises in the layer if they don't exist.
+        # Create cache matrix for weights and biases in the layer if they don't exist.
         if not hasattr(layer, "weight_cache"):
             layer.weight_cache = np.zeros_like(layer.weights)
-            layer.biais_cache = np.zeros_like(layer.biaises)
+            layer.bias_cache = np.zeros_like(layer.biases)
 
         layer.weight_cache = self.rho*layer.weight_cache + \
             (1-self.rho)*layer.dweights**2
-        layer.biais_cache = self.rho*layer.biais_cache + \
-            (1-self.rho)*layer.dbiaises**2
+        layer.bias_cache = self.rho*layer.bias_cache + \
+            (1-self.rho)*layer.dbiases**2
 
         weight_neg_gradient = -self.learning_rate * \
             layer.dweights/(np.sqrt(layer.weight_cache)+self.epsilon)
-        biais_neg_gradient = -self.learning_rate * \
-            layer.dbiaises/(np.sqrt(layer.biais_cache)+self.epsilon)
+        bias_neg_gradient = -self.learning_rate * \
+            layer.dbiases/(np.sqrt(layer.bias_cache)+self.epsilon)
 
         layer.weights += weight_neg_gradient
-        layer.biaises += biais_neg_gradient
+        layer.biases += bias_neg_gradient
 
     def post_update(self):
         """
@@ -178,45 +178,45 @@ class Adam:
 
         Some functionnalities like decaying need pre_update() and post_update().
         """
-        # Create cache and momentum matrices for weights and biaises in the layer if they don't exist.
+        # Create cache and momentum matrices for weights and biases in the layer if they don't exist.
         if not hasattr(layer, "weight_cache"):
             layer.weight_momentum = np.zeros_like(layer.weights)
-            layer.biais_momentum = np.zeros_like(layer.biaises)
+            layer.bias_momentum = np.zeros_like(layer.biases)
             layer.weight_cache = np.zeros_like(layer.weights)
-            layer.biais_cache = np.zeros_like(layer.biaises)
+            layer.bias_cache = np.zeros_like(layer.biases)
 
         # Update momentum (similar to caching in RMSprop)
         layer.weight_momentum = self.beta_1 * \
             layer.weight_momentum+(1-self.beta_1)*layer.dweights
-        layer.biais_momentum = self.beta_1 * \
-            layer.biais_momentum+(1-self.beta_1)*layer.dbiases
+        layer.bias_momentum = self.beta_1 * \
+            layer.bias_momentum+(1-self.beta_1)*layer.dbiases
 
         # Corrected momentum
         weight_momentum_corrected = layer.weight_momentum / \
             (1-self.beta_1**(self.iteration+1))
-        biais_momentum_corrected = layer.biais_momentum / \
+        bias_momentum_corrected = layer.bias_momentum / \
             (1-self.beta_1**(self.iteration+1))
 
         layer.weight_cache = self.beta_2*layer.weight_cache + \
             (1-self.beta_2)*layer.dweights**2
-        layer.biais_cache = self.beta_2*layer.biais_cache + \
-            (1-self.beta_2)*layer.dbiaises**2
+        layer.bias_cache = self.beta_2*layer.bias_cache + \
+            (1-self.beta_2)*layer.dbiases**2
 
         # Corrected cache
         weight_cache_corrected = layer.weight_cache / \
             (1-self.beta_1**(self.iteration+1))
-        biais_cache_corrected = layer.biais_cache / \
+        bias_cache_corrected = layer.bias_cache / \
             (1-self.beta_1**(self.iteration+1))
 
         weight_neg_gradient = -self.learning_rate * \
             weight_momentum_corrected / \
             (np.sqrt(weight_cache_corrected)+self.epsilon)
-        biais_neg_gradient = -self.learning_rate * \
-            biais_momentum_corrected / \
-            (np.sqrt(biais_cache_corrected)+self.epsilon)
+        bias_neg_gradient = -self.learning_rate * \
+            bias_momentum_corrected / \
+            (np.sqrt(bias_cache_corrected)+self.epsilon)
 
         layer.weights += weight_neg_gradient
-        layer.biaises += biais_neg_gradient
+        layer.biases += bias_neg_gradient
 
     def post_update(self):
         """

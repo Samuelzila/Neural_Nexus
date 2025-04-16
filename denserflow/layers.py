@@ -199,7 +199,7 @@ class Dense(Layer):
 
     def __init__(self, nb_neurons, activation=None):
         self.nb_neurons = nb_neurons
-        self.biaises = np.zeros((1, nb_neurons))
+        self.biases = np.zeros((1, nb_neurons))
         self.weights = None
         self.activation = neuron_activation(activation)()
 
@@ -209,7 +209,7 @@ class Dense(Layer):
             self.weights = 0.01 * \
                 np.random.randn(inputs.shape[1], self.nb_neurons)
         # Calcul de la sortie linéaire
-        output = np.dot(inputs, self.weights) + self.biaises
+        output = np.dot(inputs, self.weights) + self.biases
         output = self.activation(output)
         return output
 
@@ -217,10 +217,10 @@ class Dense(Layer):
         # Calcul du gradient via la dérivée de la fonction d'activation.
         # Ici, on utilise la méthode backpropagation définie pour l'activation choisie.
         dactivation = self.activation.backpropagation(dvalues)
-        # Calcul des gradients pour les poids et biais.
+        # Calcul des gradients pour les poids et bias.
         self.dweights = np.dot(self.inputs.T, dactivation)
-        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
-        self.dbiaises = np.sum(dactivation, axis=0, keepdims=True)[0]
+        # Comme self.biases est un tableau 1D, on le met à jour en le convertissant si besoin.
+        self.dbiases = np.sum(dactivation, axis=0, keepdims=True)[0]
 
         # Propagation du gradient vers la couche précédente.
         dinputs = np.dot(dactivation, self.weights.T)
@@ -229,7 +229,7 @@ class Dense(Layer):
         optimizer.update_layer(self)
 
         # Free memory
-        del self.dbiaises
+        del self.dbiases
         del self.dweights
 
         return dinputs
@@ -240,7 +240,7 @@ class Dense(Layer):
         """
         return {
             "type": "dense",
-            "biaises": self.biaises.tolist(),
+            "biases": self.biases.tolist(),
             "weights": self.weights.tolist(),
             "nb_neurons": self.nb_neurons,
             "activation": self.activation.type()
@@ -254,7 +254,7 @@ class Dense(Layer):
         layer = cls(layer_dict["nb_neurons"],
                     activation=layer_dict["activation"])
 
-        layer.biaises = np.array(layer_dict["biaises"])
+        layer.biases = np.array(layer_dict["biases"])
         layer.weights = np.array(layer_dict["weights"])
 
         return layer
