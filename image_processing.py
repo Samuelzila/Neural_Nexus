@@ -30,6 +30,11 @@ def format_matrix(matrix, flatten=False):
     flatten specifies if the final array should be flattened.
     """
     start_time = time.time()
+    
+    # Étape 0 : Bicubic resize 1
+    t0 = time.time()
+    matrix = bicubic_resize(matrix, 128)
+    print(f"Temps pour bicubic_resize : {time.time() - t0:.4f} secondes")
 
     # Étape 1 : White balance
     t1 = time.time()

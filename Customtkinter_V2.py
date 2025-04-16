@@ -13,7 +13,7 @@ import image_processing
 # === Configuration de l’apparence === #
 
 # Fonts
-font_Type_default = 'Arial' ## Police par défaut
+font_Type_default = 'Roboto' ## Police par défaut
 font_Weight_info_model_temps = 'bold'## Poids de la police pour le label du modèle et du temps de calcul
 font_Size_info_model_temps = 16
 font_Size_result_Prediction_en_attente = 64
@@ -22,9 +22,9 @@ font_Size_result3_Reponse = 202
 font_Size_graph_catégorie = 6
 
 # Couleurs
-couleur1 = 'white' #blanc
-couleur3 = '#9478c9' #violet
-couleur2 = '#91ecf9' #cyan
+couleur1 = '#AA0505' #rouge
+couleur3 = '#6A0C0B' #rouge clair
+couleur2 = '#FBCA03' #jaune
 
 # Configuration de l'apparence de CustomTkinter
 Page_wight = 1024
@@ -73,7 +73,7 @@ result_frame.grid(row=0, column=8,rowspan=8 ,columnspan=8, padx=10, pady=10)  # 
 result_label = ctk.CTkLabel(
     result_frame, 
     text="Prediction\nen attente",  # Utiliser \n pour le saut de ligne
-    font=("Arial", 64 , "bold"), 
+    font=(font_Type_default, 64 , "bold"), 
     width=512, 
     height=384, 
     text_color=couleur2, 
@@ -87,7 +87,9 @@ result_label.pack(expand=False)
 canvas_frame = ctk.CTkFrame(
     main_frame,
     width=512,
-    height= (3*(768/4))
+    height= (3*(768/4)),
+    fg_color=couleur1,
+    corner_radius=30
 )
 canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
 
@@ -129,7 +131,7 @@ menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 model_label = ctk.CTkLabel(
     main_frame, 
     text="Model : NeuralNexus0.87", 
-    font=("Roboto", font_Size_info_model_temps, "bold"), 
+    font=(font_Type_default, font_Size_info_model_temps, "bold"), 
     width=256, 
     height=(768/16), 
     text_color=couleur2, 
@@ -143,7 +145,7 @@ model_label.grid(row=15, column=8,rowspan=1,columnspan=4, padx=10, pady=10)
 time_label = ctk.CTkLabel(
     main_frame, 
     text="Temps de calcul : 0.0s", 
-    font=("Roboto", font_Size_info_model_temps, "bold"), 
+    font=(font_Type_default, font_Size_info_model_temps, "bold"), 
     width=256, 
     height=(768/16), 
     text_color=couleur2, 
@@ -185,12 +187,12 @@ class DrawingApp(ctk.CTkFrame):
         x0, y0 = event.x - radius, event.y - radius
         x1, y1 = event.x + radius, event.y + radius
 
-        self.canvas.create_oval(x0, y0, x1, y1, fill="black", outline="black")
+        self.canvas.create_oval(x0, y0, x1, y1, fill="white", outline="white")
         self.draw.ellipse([x0, y0, x1, y1], fill=0)
         
         # Si un point précédent existe, dessiner une ligne entre les deux points
         if self.last_x is not None and self.last_y is not None:
-            self.canvas.create_line(self.last_x, self.last_y, event.x, event.y, fill="black", width=radius * 2)
+            self.canvas.create_line(self.last_x, self.last_y, event.x, event.y, fill="white", width=radius * 2)
             self.draw.line([self.last_x, self.last_y, event.x, event.y], fill=0, width=radius * 2)
 
         # Mettre à jour les coordonnées du dernier point
@@ -204,7 +206,7 @@ class DrawingApp(ctk.CTkFrame):
         except Exception as e:
             print("Erreur de prédiction :", e)
             self.canvas.after(1000, self.clear_canvas)
-            result_label.configure(text="Nope.",font=("Arial", 90), text_color=couleur2, fg_color=couleur3)
+            result_label.configure(text="Nope.",font=(font_Type_default, 90), text_color=couleur2, fg_color=couleur3)
         self.canvas.after(1500, self.clear_canvas)
 
     def clear_canvas(self): #checked-ish
@@ -265,7 +267,7 @@ class DrawingApp(ctk.CTkFrame):
         ax = fig.add_subplot(111)
         ax.set_facecolor(couleur3)
 
-        segment_colors = ['#91daf9', '#f591f9', '#91bff9', '#dc91f9', '#91acf9', '#bb91f9']
+        segment_colors = ['#D4342D', '#F3DDAC', '#AA2822', '#E7BF71', '#8E0F06', '#C09645']
         textprops = {'fontsize': 6, 'color': 'black'}
         ax.pie(top_probabilities, labels=top_labels, autopct='%1.1f%%',
             startangle=90, colors=segment_colors, textprops=textprops)
@@ -319,4 +321,3 @@ def main():
 if __name__ == "__main__":
     main()
     fenetre.mainloop()
-
