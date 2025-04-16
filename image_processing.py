@@ -11,7 +11,7 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-
+import time  # Importer le module time pour mesurer les temps d'exécution
 
 def matrix_from_path(path):
     """
@@ -22,26 +22,47 @@ def matrix_from_path(path):
         return np.array(img)
 
 
+
+
 def format_matrix(matrix, flatten=False):
     """
     From an input image matrix, create a new one with the EMNIST format and return it.
     flatten specifies if the final array should be flattened.
     """
+    start_time = time.time()
 
+    # Étape 1 : White balance
+    t1 = time.time()
     matrix = white_balance(matrix, flatten=True)
+    print(f"Temps pour white_balance : {time.time() - t1:.4f} secondes")
 
-    # Ensure that the background is black
+    # Étape 2 : Black background
+    t2 = time.time()
     matrix = black_background(matrix)
+    print(f"Temps pour black_background : {time.time() - t2:.4f} secondes")
 
+    # Étape 3 : Center image
+    t3 = time.time()
     matrix = center_image(matrix)
+    print(f"Temps pour center_image : {time.time() - t3:.4f} secondes")
 
-    # Trim empty rows and columns
+    # Étape 4 : Crop
+    t4 = time.time()
     matrix = crop(matrix, padding=2, keep_centered=True)
+    print(f"Temps pour crop : {time.time() - t4:.4f} secondes")
 
-    # Make the matrix square, relative to its largest dimension.
+    # Étape 5 : Make square
+    t5 = time.time()
     matrix = make_square(matrix)
+    print(f"Temps pour make_square : {time.time() - t5:.4f} secondes")
 
+    # Étape 6 : Bicubic resize
+    t6 = time.time()
     matrix = bicubic_resize(matrix, 28)
+    print(f"Temps pour bicubic_resize : {time.time() - t6:.4f} secondes")
+
+    # Temps total pour format_matrix
+    print(f"Temps total pour format_matrix : {time.time() - start_time:.4f} secondes")
 
     return matrix.flatten() if flatten else matrix
 
@@ -52,42 +73,63 @@ def crop(matrix, padding=0, keep_centered=True):
     Padding tells how many empty rows and columns to leave on each side.
     If keep cenetered is true, it won't crop in a way that would uncenter the image.
     """
-    # Trim empty rows and columns
-    # Find top rows
+    start_time = time.time()
+
+    # Dimensions de la matrice
     m, n = matrix.shape
+
+    # Étape 1 : Trouver la ligne supérieure
+    t1 = time.time()
     for i in reversed(range(m)):
         if np.all(matrix[:i+1] == 0):
             argtop = i-1
             break
-    # Find bottom row
+    print(f"Temps pour trouver la ligne supérieure : {time.time() - t1:.4f} secondes")
+
+    # Étape 2 : Trouver la ligne inférieure
+    t2 = time.time()
     for i in range(m):
         if np.all(matrix[i:] == 0):
             argbottom = i+1
             break
-    # Find right columns
+    print(f"Temps pour trouver la ligne inférieure : {time.time() - t2:.4f} secondes")
+
+    # Étape 3 : Trouver la colonne droite
+    t3 = time.time()
     for i in reversed(range(n)):
         if np.all(matrix[:, :i+1] == 0):
             argright = i-1
             break
-    # Find left columns
+    print(f"Temps pour trouver la colonne droite : {time.time() - t3:.4f} secondes")
+
+    # Étape 4 : Trouver la colonne gauche
+    t4 = time.time()
     for i in range(n):
         if np.all(matrix[:, i:] == 0):
             argleft = i+1
             break
+    print(f"Temps pour trouver la colonne gauche : {time.time() - t4:.4f} secondes")
 
-    # Trim the matrix
+    # Étape 5 : Recadrer la matrice
+    t5 = time.time()
     if not keep_centered:
         matrix = matrix[argtop:argbottom+1, argright:argleft+1]
     else:
         argtb = min(argtop, m-argbottom)
         argrl = min(argright, n-argleft)
         matrix = matrix[argtb:m-argtb+1, argrl:n-argrl+1]
+    print(f"Temps pour recadrer la matrice : {time.time() - t5:.4f} secondes")
 
-    # Add <padding> rows and columns on every side.
+    # Étape 6 : Ajouter du padding
+    t6 = time.time()
     matrix = np.append(matrix, np.zeros((padding, matrix.shape[1])), axis=0)
     matrix = np.append(np.zeros((padding, matrix.shape[1])), matrix, axis=0)
     matrix = np.append(matrix, np.zeros((matrix.shape[0], padding)), axis=1)
     matrix = np.append(np.zeros((matrix.shape[0], padding)), matrix, axis=1)
+    print(f"Temps pour ajouter du padding : {time.time() - t6:.4f} secondes")
+
+    # Temps total pour crop
+    print(f"Temps total pour crop : {time.time() - start_time:.4f} secondes")
 
     return matrix
 
@@ -190,9 +232,10 @@ def bicubic_resize(matrix, size_x):
     return np.array(image)
 
 
-image = matrix_from_path("./Screenshot_20250414_132400.png")
-matrix = format_matrix(image, flatten=False)
+if __name__ == "__main__":
+    image = matrix_from_path("./Screenshot_20250414_132400.png")
+    matrix = format_matrix(image, flatten=False)
 
+    plt.imshow(matrix, cmap="grey")
+    plt.show()
 
-plt.imshow(matrix, cmap="grey")
-plt.show()

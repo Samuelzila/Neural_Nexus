@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from customtkinter import CTkImage  # Assurez-vous que CTkImage est importé
 from PIL import Image, ImageTk, ImageDraw
 import numpy as np
 import emnist
@@ -6,6 +7,7 @@ from denserflow import models
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
+import image_processing
 
 ##======================================================================
 # === Configuration de l’apparence === #
@@ -210,40 +212,55 @@ class DrawingApp(ctk.CTkFrame):
         self.image = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
         self.draw = ImageDraw.Draw(self.image)
 
-    def predict(self): #checked-ish (jamais vrmnt finis)
-        import image_processing
+    def predict(self):
+        #import time  # Assurez-vous que le module est importé
 
         # Mesurer le temps de début
         start_time = time.time()
 
         # Préparer l'image pour la prédiction
+        t1 = time.time()
         matrix = image_processing.format_matrix(np.array(self.image))
+        print(f"Temps pour format_matrix : {time.time() - t1:.4f} secondes")
+
+        t2 = time.time()
         prediction = self.model(matrix.reshape(1, 784))
+        print(f"Temps pour la prédiction du modèle : {time.time() - t2:.4f} secondes")
+
+        t3 = time.time()
         digit = emnist.label_to_char(np.argmax(prediction))
-        result_label.configure(text=f"{digit}",font=("Comic sans ms", 202), text_color=couleur2, fg_color=couleur3)
+        print(f"Temps pour convertir la prédiction en caractère : {time.time() - t3:.4f} secondes")
+
+        result_label.configure(text=f"{digit}", font=("Comic sans ms", 202), text_color=couleur2, fg_color=couleur3)
 
         # Calculer le temps de fin
         end_time = time.time()
         elapsed_time = end_time - start_time
+        print(f"Temps total pour predict : {elapsed_time:.4f} secondes")
 
         # Mettre à jour le time_label avec le temps de calcul
         time_label.configure(text=f"Temps de calcul : {elapsed_time:.2f}s")
 
         # Accéder aux probabilités de sortie
+        t4 = time.time()
         probabilities = prediction.flatten()
         labels = [emnist.label_to_char(i) for i in range(len(probabilities))]
+        print(f"Temps pour accéder aux probabilités : {time.time() - t4:.4f} secondes")
 
         # Trier les probabilités et les étiquettes par ordre décroissant
+        t5 = time.time()
         sorted_indices = np.argsort(probabilities)[::-1]
         top_indices = sorted_indices[:6]
         top_probabilities = probabilities[top_indices]
         top_labels = [labels[i] for i in top_indices]
+        print(f"Temps pour trier les probabilités : {time.time() - t5:.4f} secondes")
 
         # Créer un diagramme circulaire
+        t6 = time.time()
         dpi = 200
         figsize = (560 / dpi, 336 / dpi)
         fig = Figure(figsize=figsize, dpi=dpi)
-        fig.patch.set_facecolor(couleur3)  # Définir la même couleur que le frame
+        fig.patch.set_facecolor(couleur3)
 
         ax = fig.add_subplot(111)
         ax.set_facecolor(couleur3)
@@ -253,42 +270,43 @@ class DrawingApp(ctk.CTkFrame):
         ax.pie(top_probabilities, labels=top_labels, autopct='%1.1f%%',
             startangle=90, colors=segment_colors, textprops=textprops)
         ax.axis('equal')
+        print(f"Temps pour créer le diagramme circulaire : {time.time() - t6:.4f} secondes")
 
         # Afficher le diagramme dans le frame vert (statistics_frame)
         for widget in statistics_frame.winfo_children():
             widget.destroy()
-        
-        # Frame intermédiaire pour le graphique
+
         graph_frame = ctk.CTkFrame(
             statistics_frame,
-            fg_color="transparent",  # Pas de couleur de fond
+            fg_color="transparent",
             corner_radius=0
         )
-        graph_frame.pack( fill="both", padx=10, pady=10)
+        graph_frame.pack(fill="both", padx=10, pady=10)
 
         canvas = FigureCanvasTkAgg(fig, master=graph_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack()
+        canvas.get_tk_widget().pack()        
 
         # Convertir la matrice en image pour l'afficher dans le frame bleu (input_frame)
+        t7 = time.time()
         img_array = np.array(matrix)
         img_resized = Image.fromarray(img_array).resize((276, 202))
-        img_tk = ImageTk.PhotoImage(img_resized)
+
+        # Utiliser CTkImage au lieu de ImageTk.PhotoImage
+        img_tk = CTkImage(light_image=img_resized, size=(276, 202))
+
+        print(f"Temps pour convertir la matrice en image : {time.time() - t7:.4f} secondes")
 
         if hasattr(self, 'blue_frame_label'):
-            # Mettre à jour l'image tout en conservant la couleur de fond
             self.blue_frame_label.configure(image=img_tk, text="", fg_color=couleur3)
-            self.blue_frame_label.image = img_tk
         else:
-            # Créer le label avec l'image et la couleur de fond
             self.blue_frame_label = ctk.CTkLabel(
-                input_frame, 
-                image=img_tk, 
-                text="", 
+                input_frame,
+                image=img_tk,
+                text="",
                 fg_color=couleur3
             )
-            self.blue_frame_label.pack(padx=10, pady=10)  # Ajouter des marges
-            
+            self.blue_frame_label.pack(padx=10, pady=10)
 
 # === Point d’entrée principal === #
 def main():
