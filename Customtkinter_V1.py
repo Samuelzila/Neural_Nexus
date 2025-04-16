@@ -1,10 +1,18 @@
+from annotated_types import Le
+from cv2 import imshow
+import image_processing
+from networkx import les_miserables_graph
 import customtkinter as ctk
+from polars import col
+import processImg as pm
 from PIL import Image, ImageTk, ImageDraw
 import numpy as np
 import emnist
 from denserflow import models
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import filedialog
 
 # Configuration de l’apparence
 ctk.set_appearance_mode("black")  # ou "light", "system"
@@ -39,6 +47,8 @@ input_frame.grid(row=1, column=0)
 statistics_frame = ctk.CTkFrame(main_frame, width=350, height=350, corner_radius=10,fg_color='gray')
 statistics_frame.grid(row=1, column=1)
 
+
+
 # === Classe pour le dessin et prédiction === #
 class DrawingApp(ctk.CTkFrame):
     def __init__(self, parent, model):
@@ -55,6 +65,7 @@ class DrawingApp(ctk.CTkFrame):
 
         self.last_x, self.last_y = None, None
         self.bind_events()
+
 
     def bind_events(self):
         self.canvas.bind("<B1-Motion>", self.draw_on_canvas)
@@ -86,7 +97,7 @@ class DrawingApp(ctk.CTkFrame):
         self.draw = ImageDraw.Draw(self.image)
 
     def predict(self):
-        import image_processing
+        
 
         matrix = image_processing.format_matrix(np.array(self.image))
         prediction = self.model(matrix.reshape(1, 784))
@@ -133,6 +144,58 @@ class DrawingApp(ctk.CTkFrame):
             self.blue_frame_label = ctk.CTkLabel(input_frame, image=img_tk, text="")
             self.blue_frame_label.image = img_tk
             self.blue_frame_label.pack(expand=True)
+
+def select_file_customtk():
+    # Créer une instance de fenêtre CustomTkinter
+    root = ctk.CTk()
+    # On peut centrer ou configurer la fenêtre si nécessaire
+    root.title("Sélection de fichier")
+    
+    # On masque la fenêtre principale pour afficher uniquement le dialogue de sélection
+    root.withdraw()
+    # Ouvrir le dialogue de sélection de fichier
+    file_path = filedialog.askopenfilename(
+        title="Sélectionnez un fichier",
+        filetypes=[
+            ("Tous les fichiers", "*.*"),
+            ("Fichiers texte", "*.txt"),
+            ("Fichiers PDF", "*.pdf")
+        ]
+    )
+    
+    # Détruire la fenêtre une fois le fichier sélectionné
+    root.destroy()
+    
+    return file_path
+def Anlayse_texte():
+    model = models.load_model("NeuralNexus0,87.json")
+    image_path = select_file_customtk()
+    LesMots = pm.ImgToChar(image_path, 0.1)
+    LeTexte = []
+    for mots in LesMots:
+        LeTexte.append(" ")
+        for char in mots:
+            matrix = image_processing.format_matrix(np.array(char))
+            try:
+                prediction = model(matrix.reshape(1, 784))
+                print(matrix.shape)
+                
+            except:
+                plt.imshow(matrix, "gray")
+                plt.show()
+            digit = emnist.label_to_char(np.argmax(prediction))
+            LeTexte.append(digit)
+        
+    
+    LeTexte = "".join(LeTexte)
+    print(LeTexte)
+    
+        
+        
+        
+
+button = ctk.CTkButton(main_frame, text="Sélectionner un fichier", command=Anlayse_texte)
+button.grid(row= 0, column = 1)
 
 # === Point d’entrée principal === #
 def main():

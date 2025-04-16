@@ -146,16 +146,19 @@ def ImgToChar(input_image_path, biais=0):
         #print(f"Ligne {idx+1} - charactère détectés :", charr)
         for w_idx, (col_start, col_end) in enumerate(charr):
             word_img = line_img[:, col_start:col_end]
-            CharacterImg.append(im.format_matrix(word_img))
+            CharacterImg.append(word_img)
+
 
             #ajoute les mots
             last_place = col_end
             if(last_place-col_start)> avg_lenght + biais:
-                Mots.append(CharacterImg)
                 CharacterImg = []
+                Mots.append(CharacterImg)
+                
             if w_idx + 1 == len(charr):
-                Mots.append(CharacterImg)
                 CharacterImg = []
+                Mots.append(CharacterImg)
+                
             
 
             # Sauvegarde de l'image de chaque mot
