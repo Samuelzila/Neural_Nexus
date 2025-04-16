@@ -1,4 +1,4 @@
-from . import layers
+from . import layers, optimizers
 import json
 
 
@@ -31,9 +31,11 @@ class Sequential:
 
             grad = loss_function.backpropagation(y_pred, y)
 
+            optimizer = optimizers.SGD(learning_rate)
+
             # Parcours des couches en sens inverse pour rétropropager l'erreur
             for layer in reversed(self.layers):
-                grad = layer.backpropagation(grad, learning_rate)
+                grad = layer.backpropagation(grad, optimizer=optimizer)
 
     def save(self, path):
         """
