@@ -1,4 +1,5 @@
 from . import layers, optimizers
+import os
 import json
 
 
@@ -44,6 +45,7 @@ class Sequential:
         """
         Save the model to the path using a custom json format
         """
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w') as file:
             file.write(json.dumps(self.to_dict()))
 
