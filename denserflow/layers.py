@@ -273,7 +273,7 @@ class Dense(Layer):
                                  "bias_momentum", "weight_cache", "bias_cache"]
         for param in optional_params_numpy:
             if param in layer_dict:
-                setattr(layer, param, np.array(layer[param]))
+                setattr(layer, param, np.array(layer_dict[param]))
 
         return layer
 
