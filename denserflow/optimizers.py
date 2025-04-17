@@ -9,6 +9,33 @@ class SGD:
         self.decay = decay
         self.momentum = momentum
         self.iteration = 0
+        self.name = "sgd"
+
+    def to_dict(self):
+        return {
+            "learning_rate_0": self.learning_rate_0,
+            "learning_rate": self.learning_rate,
+            "decay": self.decay,
+            "momentum": self.momentum,
+            "iteration": self.iteration,
+            "name": self.name,
+        }
+
+    @classmethod
+    def from_dict(cls, optimizer_dict):
+        """
+        Optimizer constructor from dictionary
+        """
+        # Parameters that need to be initialized
+        params = ["learning_rate_0", "learning_rate",
+                  "decay", "momentum", "iteration"]
+
+        optimizer = cls()
+
+        for param in params:
+            setattr(optimizer, param, optimizer_dict[param])
+
+        return optimizer
 
     def pre_update(self):
         """
@@ -63,6 +90,33 @@ class AdaGrad:
         self.decay = decay
         self.epsilon = epsilon
         self.iteration = 0
+        self.name = "adagrad"
+
+    def to_dict(self):
+        return {
+            "learning_rate_0": self.learning_rate_0,
+            "learning_rate": self.learning_rate,
+            "decay": self.decay,
+            "momentum": self.momentum,
+            "iteration": self.iteration,
+            "name": self.name,
+        }
+
+    @classmethod
+    def from_dict(cls, optimizer_dict):
+        """
+        Optimizer constructor from dictionary
+        """
+        # Parameters that need to be initialized
+        params = ["learning_rate_0", "learning_rate",
+                  "decay", "epsilon", "iteration"]
+
+        optimizer = cls()
+
+        for param in params:
+            setattr(optimizer, param, optimizer_dict[param])
+
+        return optimizer
 
     def pre_update(self):
         """
@@ -111,6 +165,34 @@ class RMSprop:
         self.epsilon = epsilon
         self.iteration = 0
         self.rho = rho
+        self.name = "rmsprop"
+
+    def to_dict(self):
+        return {
+            "learning_rate_0": self.learning_rate_0,
+            "learning_rate": self.learning_rate,
+            "decay": self.decay,
+            "epsilon": self.epsilon,
+            "iteration": self.iteration,
+            "rho": self.rho,
+            "name": self.name,
+        }
+
+    @classmethod
+    def from_dict(cls, optimizer_dict):
+        """
+        Optimizer constructor from dictionary
+        """
+        # Parameters that need to be initialized
+        params = ["learning_rate_0", "learning_rate",
+                  "decay", "epsilon", "iteration", "rho"]
+
+        optimizer = cls()
+
+        for param in params:
+            setattr(optimizer, param, optimizer_dict[param])
+
+        return optimizer
 
     def pre_update(self):
         """
@@ -162,6 +244,35 @@ class Adam:
         self.iteration = 0
         self.beta_1 = beta_1
         self.beta_2 = beta_2
+        self.name = "adam"
+
+    def to_dict(self):
+        return {
+            "learning_rate_0": self.learning_rate_0,
+            "learning_rate": self.learning_rate,
+            "decay": self.decay,
+            "epsilon": self.epsilon,
+            "iteration": self.iteration,
+            "beta_1": self.beta_1,
+            "beta_2": self.beta_2,
+            "name": self.name,
+        }
+
+    @classmethod
+    def from_dict(cls, optimizer_dict):
+        """
+        Optimizer constructor from dictionary
+        """
+        # Parameters that need to be initialized
+        params = ["learning_rate_0", "learning_rate",
+                  "decay", "epsilon", "iteration", "beta_1", "beta_2"]
+
+        optimizer = cls()
+
+        for param in params:
+            setattr(optimizer, param, optimizer_dict[param])
+
+        return optimizer
 
     def pre_update(self):
         """
@@ -231,3 +342,12 @@ optimizer_type_dict = {
     "rmsprop": RMSprop,
     "adam": Adam
 }
+
+
+def from_dict(optimizer_dict):
+    """
+    Converts a dict into an optimizer object
+    """
+    optimizer = optimizer_type_dict.get(optimizer_dict["name"])
+
+    return optimizer.from_dict(optimizer_dict)

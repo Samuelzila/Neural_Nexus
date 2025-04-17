@@ -53,17 +53,32 @@ class Sequential:
         """
         Returns the model as a dictionary
         """
-        return {
+        ret_dict = {
             "type": "sequential",
             "layers": [layer.to_dict() for layer in self.layers]
         }
 
+        if hasattr(self, "optimizer"):
+            ret_dict["optimizer"] = self.optimizer.to_dict()
+
+        return ret_dict
+
     @classmethod
-    def from_dict(cls, layer_dicts):
+    def from_dict(cls, obj_dict):
+        """
+        Create a sequential model by passing in its dictionnary representation
+        """
         layers_arr = []
-        for layer_dict in layer_dicts:
+
+        for layer_dict in obj_dict["layers"]:
             layers_arr.append(layers.from_dict(layer_dict))
-        return cls(layers_arr)
+
+        obj = cls(layers_arr)
+
+        if "optimizer" in obj_dict:
+            obj.optimizer = optimizers.from_dict(obj_dict["optimizer"])
+
+        return obj
 
     def predict(self, X):
         return self(X)
@@ -83,4 +98,4 @@ def load_model(path):
 
     model_class = model_type_dict.get(obj["type"])
 
-    return model_class.from_dict(obj["layers"])
+    return model_class.from_dict(obj)

@@ -27,6 +27,10 @@ class CategoricalCrossEntropy():
         return negative_log_likelihoods
 
     def backpropagation(self, y_pred, y_true):
+        # Prevent division by zero
+        epsilon = 1e-7
+        y_pred[np.abs(y_pred) < epsilon] = epsilon
+
         # Number of samples
         samples = len(y_pred)
 
@@ -37,7 +41,7 @@ class CategoricalCrossEntropy():
         # Calculate gradient
         dinputs = -y_true / y_pred
         # Normalize gradient
-        dinputs = dinputs / samples
+        dinputs = dinputs / (samples)
         return dinputs
 
 
@@ -238,13 +242,20 @@ class Dense(Layer):
         """
         Returns the object as a dict
         """
-        return {
+        ret_dict = {
             "type": "dense",
             "biases": self.biases.tolist(),
             "weights": self.weights.tolist(),
             "nb_neurons": self.nb_neurons,
-            "activation": self.activation.type()
+            "activation": self.activation.type(),
         }
+        optional_params_numpy = ["weight_momentum",
+                                 "bias_momentum", "weight_cache", "bias_cache"]
+        for param in optional_params_numpy:
+            if hasattr(self, param):
+                ret_dict[param] = getattr(self, param).tolist()
+
+        return ret_dict
 
     @classmethod
     def from_dict(cls, layer_dict):
@@ -256,6 +267,13 @@ class Dense(Layer):
 
         layer.biases = np.array(layer_dict["biases"])
         layer.weights = np.array(layer_dict["weights"])
+
+        # Initialize optional parameters
+        optional_params_numpy = ["weight_momentum",
+                                 "bias_momentum", "weight_cache", "bias_cache"]
+        for param in optional_params_numpy:
+            if param in layer_dict:
+                setattr(layer, param, np.array(layer[param]))
 
         return layer
 
