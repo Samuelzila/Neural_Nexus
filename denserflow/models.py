@@ -1,4 +1,5 @@
 from . import layers, optimizers
+import os
 import json
 
 
@@ -16,10 +17,13 @@ class Sequential:
 
         return inputs
 
-    def compile():
-        pass
+    def compile(self, optimizer='sgd', loss="categorical_crossentropy"):
+        if isinstance(optimizer, str):
+            self.optimizer = optimizers.optimizer_type_dict.get(optimizer)()
+        else:
+            self.optimizer = optimizer
 
-    def fit(self, X, y, learning_rate=0.01, epochs=1000):
+    def fit(self, X, y, epochs=1000):
         for epoch in range(epochs):
             # Passe avant (forward pass)
 
@@ -31,16 +35,17 @@ class Sequential:
 
             grad = loss_function.backpropagation(y_pred, y)
 
-            optimizer = optimizers.SGD(learning_rate)
-
+            self.optimizer.pre_update()
             # Parcours des couches en sens inverse pour rétropropager l'erreur
             for layer in reversed(self.layers):
-                grad = layer.backpropagation(grad, optimizer=optimizer)
+                grad = layer.backpropagation(grad, optimizer=self.optimizer)
+            self.optimizer.post_update()
 
     def save(self, path):
         """
         Save the model to the path using a custom json format
         """
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w') as file:
             file.write(json.dumps(self.to_dict()))
 
@@ -48,17 +53,32 @@ class Sequential:
         """
         Returns the model as a dictionary
         """
-        return {
+        ret_dict = {
             "type": "sequential",
             "layers": [layer.to_dict() for layer in self.layers]
         }
 
+        if hasattr(self, "optimizer"):
+            ret_dict["optimizer"] = self.optimizer.to_dict()
+
+        return ret_dict
+
     @classmethod
-    def from_dict(cls, layer_dicts):
+    def from_dict(cls, obj_dict):
+        """
+        Create a sequential model by passing in its dictionnary representation
+        """
         layers_arr = []
-        for layer_dict in layer_dicts:
+
+        for layer_dict in obj_dict["layers"]:
             layers_arr.append(layers.from_dict(layer_dict))
-        return cls(layers_arr)
+
+        obj = cls(layers_arr)
+
+        if "optimizer" in obj_dict:
+            obj.optimizer = optimizers.from_dict(obj_dict["optimizer"])
+
+        return obj
 
     def predict(self, X):
         return self(X)
@@ -78,4 +98,4 @@ def load_model(path):
 
     model_class = model_type_dict.get(obj["type"])
 
-    return model_class.from_dict(obj["layers"])
+    return model_class.from_dict(obj)

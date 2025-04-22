@@ -27,6 +27,10 @@ class CategoricalCrossEntropy():
         return negative_log_likelihoods
 
     def backpropagation(self, y_pred, y_true):
+        # Prevent division by zero
+        epsilon = 1e-7
+        y_pred[np.abs(y_pred) < epsilon] = epsilon
+
         # Number of samples
         samples = len(y_pred)
 
@@ -37,7 +41,7 @@ class CategoricalCrossEntropy():
         # Calculate gradient
         dinputs = -y_true / y_pred
         # Normalize gradient
-        dinputs = dinputs / samples
+        dinputs = dinputs / (samples)
         return dinputs
 
 
@@ -198,7 +202,8 @@ class Dense(Layer):
     """
 
     def __init__(self, nb_neurons, activation=None):
-        self.biaises = np.zeros((1, nb_neurons))
+        self.nb_neurons = nb_neurons
+        self.biases = np.zeros((1, nb_neurons))
         self.weights = None
         self.activation = neuron_activation(activation)()
 
@@ -208,7 +213,7 @@ class Dense(Layer):
             self.weights = 0.01 * \
                 np.random.randn(inputs.shape[1], self.nb_neurons)
         # Calcul de la sortie linéaire
-        output = np.dot(inputs, self.weights) + self.biaises
+        output = np.dot(inputs, self.weights) + self.biases
         output = self.activation(output)
         return output
 
@@ -216,10 +221,10 @@ class Dense(Layer):
         # Calcul du gradient via la dérivée de la fonction d'activation.
         # Ici, on utilise la méthode backpropagation définie pour l'activation choisie.
         dactivation = self.activation.backpropagation(dvalues)
-        # Calcul des gradients pour les poids et biais.
+        # Calcul des gradients pour les poids et bias.
         self.dweights = np.dot(self.inputs.T, dactivation)
-        # Comme self.biaises est un tableau 1D, on le met à jour en le convertissant si besoin.
-        self.dbiaises = np.sum(dactivation, axis=0, keepdims=True)[0]
+        # Comme self.biases est un tableau 1D, on le met à jour en le convertissant si besoin.
+        self.dbiases = np.sum(dactivation, axis=0, keepdims=True)[0]
 
         # Propagation du gradient vers la couche précédente.
         dinputs = np.dot(dactivation, self.weights.T)
@@ -228,7 +233,7 @@ class Dense(Layer):
         optimizer.update_layer(self)
 
         # Free memory
-        del self.dbiaises
+        del self.dbiases
         del self.dweights
 
         return dinputs
@@ -237,13 +242,20 @@ class Dense(Layer):
         """
         Returns the object as a dict
         """
-        return {
+        ret_dict = {
             "type": "dense",
-            "biaises": self.biaises.tolist(),
+            "biases": self.biases.tolist(),
             "weights": self.weights.tolist(),
             "nb_neurons": self.nb_neurons,
-            "activation": self.activation.type()
+            "activation": self.activation.type(),
         }
+        optional_params_numpy = ["weight_momentum",
+                                 "bias_momentum", "weight_cache", "bias_cache"]
+        for param in optional_params_numpy:
+            if hasattr(self, param):
+                ret_dict[param] = getattr(self, param).tolist()
+
+        return ret_dict
 
     @classmethod
     def from_dict(cls, layer_dict):
@@ -253,8 +265,15 @@ class Dense(Layer):
         layer = cls(layer_dict["nb_neurons"],
                     activation=layer_dict["activation"])
 
-        layer.biaises = np.array(layer_dict["biaises"])
+        layer.biases = np.array(layer_dict["biases"])
         layer.weights = np.array(layer_dict["weights"])
+
+        # Initialize optional parameters
+        optional_params_numpy = ["weight_momentum",
+                                 "bias_momentum", "weight_cache", "bias_cache"]
+        for param in optional_params_numpy:
+            if param in layer_dict:
+                setattr(layer, param, np.array(layer_dict[param]))
 
         return layer
 
