@@ -41,7 +41,6 @@ ctk.set_default_color_theme("blue")  # Thème global
 # === Configuration de la fenêtre principale === #
 fenetre = ctk.CTk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
-fenetre.geometry("1024x768")
 fenetre._fg_color = couleur3
 
 #main frame (big picture of the app) dimension = 1024x768   #checked
