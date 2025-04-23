@@ -232,9 +232,9 @@ class DrawingApp(ctk.CTkFrame):
 
         prediction = self.model(matrix.reshape(1, 784))
 
-        digit = emnist.label_to_char(np.argmax(prediction))
+        character = emnist.label_to_char(np.argmax(prediction))
 
-        result_label.configure(text=f"{digit}", font=(
+        result_label.configure(text=f"{character}", font=(
             "Comic sans ms", 202), text_color=couleur2, fg_color=couleur3)
 
         # Calculer le temps de fin

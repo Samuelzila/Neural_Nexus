@@ -33,7 +33,7 @@ else:
     ])
 
     optimizer = optimizers.Adam(decay=1e-4)
-    model.compile(optimizer=optimizer)
+    model.compile(optimizer=optimizer, loss="sparse_categorical_crossentropy")
 
 # Train until interrupted
 try:
