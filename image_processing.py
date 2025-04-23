@@ -11,7 +11,7 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import time  # Importer le module time pour mesurer les temps d'exécution
+
 
 def matrix_from_path(path):
     """
@@ -22,119 +22,83 @@ def matrix_from_path(path):
         return np.array(img)
 
 
-
-
 def format_matrix(matrix, flatten=False):
     """
     From an input image matrix, create a new one with the EMNIST format and return it.
     flatten specifies if the final array should be flattened.
     """
-    start_time = time.time()
-    
-    # Étape 0 : Bicubic resize 1
-    t0 = time.time()
+
+    # Resize image to a fixed resolution to have a predictable execution time
     matrix = bicubic_resize(matrix, 128)
-    print(f"Temps pour bicubic_resize : {time.time() - t0:.4f} secondes")
 
-    # Étape 1 : White balance
-    t1 = time.time()
-    matrix = white_balance(matrix, flatten=True)
-    print(f"Temps pour white_balance : {time.time() - t1:.4f} secondes")
+    # White balance
+    matrix = white_balance(matrix, flatten_colours=True)
 
-    # Étape 2 : Black background
-    t2 = time.time()
+    # Ensure that the background is black.
     matrix = black_background(matrix)
-    print(f"Temps pour black_background : {time.time() - t2:.4f} secondes")
 
-    # Étape 3 : Center image
-    t3 = time.time()
+    # Center letter in image
     matrix = center_image(matrix)
-    print(f"Temps pour center_image : {time.time() - t3:.4f} secondes")
 
-    # Étape 4 : Crop
-    t4 = time.time()
+    # Crop the image
     matrix = crop(matrix, padding=2, keep_centered=True)
-    print(f"Temps pour crop : {time.time() - t4:.4f} secondes")
 
-    # Étape 5 : Make square
-    t5 = time.time()
+    # Make the image square
     matrix = make_square(matrix)
-    print(f"Temps pour make_square : {time.time() - t5:.4f} secondes")
 
-    # Étape 6 : Bicubic resize
-    t6 = time.time()
+    # Resize the image to 28x28
     matrix = bicubic_resize(matrix, 28)
-    print(f"Temps pour bicubic_resize : {time.time() - t6:.4f} secondes")
-
-    # Temps total pour format_matrix
-    print(f"Temps total pour format_matrix : {time.time() - start_time:.4f} secondes")
 
     return matrix.flatten() if flatten else matrix
 
 
 def crop(matrix, padding=0, keep_centered=True):
     """
-    Removes empty rows and columns from matrix.
+    Removes empty rows and columns from the outside of the image matrix.
     Padding tells how many empty rows and columns to leave on each side.
     If keep cenetered is true, it won't crop in a way that would uncenter the image.
     """
-    start_time = time.time()
 
-    # Dimensions de la matrice
+    # Dimensions of the matrix
     m, n = matrix.shape
 
-    # Étape 1 : Trouver la ligne supérieure
-    t1 = time.time()
+    # Find where to crop on the top
     for i in reversed(range(m)):
         if np.all(matrix[:i+1] == 0):
             argtop = i-1
             break
-    print(f"Temps pour trouver la ligne supérieure : {time.time() - t1:.4f} secondes")
 
-    # Étape 2 : Trouver la ligne inférieure
-    t2 = time.time()
+    # Find where to crop on the bottom
     for i in range(m):
         if np.all(matrix[i:] == 0):
             argbottom = i+1
             break
-    print(f"Temps pour trouver la ligne inférieure : {time.time() - t2:.4f} secondes")
 
-    # Étape 3 : Trouver la colonne droite
-    t3 = time.time()
+    # Find where to crop on the right
     for i in reversed(range(n)):
         if np.all(matrix[:, :i+1] == 0):
             argright = i-1
             break
-    print(f"Temps pour trouver la colonne droite : {time.time() - t3:.4f} secondes")
 
-    # Étape 4 : Trouver la colonne gauche
-    t4 = time.time()
+    # Find where to crop on the left
     for i in range(n):
         if np.all(matrix[:, i:] == 0):
             argleft = i+1
             break
-    print(f"Temps pour trouver la colonne gauche : {time.time() - t4:.4f} secondes")
 
-    # Étape 5 : Recadrer la matrice
-    t5 = time.time()
+    # Crop
     if not keep_centered:
         matrix = matrix[argtop:argbottom+1, argright:argleft+1]
     else:
         argtb = min(argtop, m-argbottom)
         argrl = min(argright, n-argleft)
         matrix = matrix[argtb:m-argtb+1, argrl:n-argrl+1]
-    print(f"Temps pour recadrer la matrice : {time.time() - t5:.4f} secondes")
 
-    # Étape 6 : Ajouter du padding
-    t6 = time.time()
+    # Add padding
     matrix = np.append(matrix, np.zeros((padding, matrix.shape[1])), axis=0)
     matrix = np.append(np.zeros((padding, matrix.shape[1])), matrix, axis=0)
     matrix = np.append(matrix, np.zeros((matrix.shape[0], padding)), axis=1)
     matrix = np.append(np.zeros((matrix.shape[0], padding)), matrix, axis=1)
-    print(f"Temps pour ajouter du padding : {time.time() - t6:.4f} secondes")
-
-    # Temps total pour crop
-    print(f"Temps total pour crop : {time.time() - start_time:.4f} secondes")
 
     return matrix
 
@@ -176,14 +140,14 @@ def black_background(matrix):
     return matrix
 
 
-def white_balance(matrix, flatten=False):
+def white_balance(matrix, flatten_colours=False):
     """
     Given an image matrix, make its lightest colour white and darkest one black. Adjust all other values in consequence.
     If flatten is true, the colors will only be black and white.
     """
     lightest = np.max(matrix)
     darkest = np.min(matrix)
-    if not flatten:
+    if not flatten_colours:
         return ((matrix-darkest)/(lightest-darkest)) * 255
 
     middle = (darkest+lightest)/2
@@ -235,12 +199,3 @@ def bicubic_resize(matrix, size_x):
     image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
 
     return np.array(image)
-
-
-if __name__ == "__main__":
-    image = matrix_from_path("./Screenshot_20250414_132400.png")
-    matrix = format_matrix(image, flatten=False)
-
-    plt.imshow(matrix, cmap="grey")
-    plt.show()
-

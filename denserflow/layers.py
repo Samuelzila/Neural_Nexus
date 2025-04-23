@@ -1,8 +1,6 @@
 import numpy as np
 from . import optimizers
 
-# [] est-ce que je devrais ajouter self à chacun des classes
-
 
 class CategoricalCrossEntropy():
     def __call__(self, y_pred, y_true):
@@ -108,40 +106,6 @@ class Softmax:
         return "softmax"
 
 
-# class Softmax_CCE:
-#     # Creates activation and loss function objects
-#     def __init__(self):
-#         self.activation = Softmax()
-#         self.loss = cross_entropy_loss
-#
-#     # Forward pass
-#     def __call__(self, inputs):
-#         # Output layer's activation function
-#         self.activation(inputs)
-#         # Set the output
-#         self.output = self.activation.output
-#         # Calculate and return loss value
-#         return self.output
-#     # Backward pass
-#
-#     def backpropagation(self, dvalues, y_true):
-#         # Number of samples
-#         samples = len(dvalues)
-#         # If labels are one-hot encoded,
-#         # turn them into discrete values
-#         # FIXME:
-#         # if len(y_true.shape) == 3:
-#         #     y_true = np.argmax(y_true, axis=1)
-#         y_true = y_true.flatten()
-#
-#         # Copy so we can safely modify
-#         self.dinputs = dvalues.copy()
-#         # Calculate gradient
-#         self.dinputs[range(samples), y_true] -= 1
-#         # Normalize gradient
-#         self.dinputs = self.dinputs / samples
-
-
 class Layer:
     """
     Abstract layer class, to be used as a parent.
@@ -184,6 +148,7 @@ def mse_loss_derivative(y_true, y_pred):
     return 2 * (y_pred - y_true) / y_true.shape[0]
 
 
+# A dictionary associating names of activation functions as strings with their class.
 activation_type_dict = {
     "relu": Relu,
     "sigmoid": sigmoid,
@@ -193,12 +158,16 @@ activation_type_dict = {
 
 
 def neuron_activation(activation):
+    """
+    Given the name of an activation function as a string, returns the associated class.
+    """
     return activation_type_dict.get(activation)
 
 
 class Dense(Layer):
     """
-    Couche dense (fully connected).
+    Dense layer (fully connected).
+    All neurons in the input are connected to all neurons of this layer.
     """
 
     def __init__(self, nb_neurons, activation=None):
@@ -208,6 +177,9 @@ class Dense(Layer):
         self.activation = neuron_activation(activation)()
 
     def __call__(self, inputs):
+        """
+        The forward pass. Apply the neuronal layer to the input data.
+        """
         self.inputs = inputs
         if self.weights is None:
             self.weights = 0.01 * \
@@ -218,6 +190,9 @@ class Dense(Layer):
         return output
 
     def backpropagation(self, dvalues, optimizer=optimizers.SGD()):
+        """
+        During the backward pass, this function updates the layers according to the optimizer and returns the impact ("drivatives") of the inputs.
+        """
         # Calcul du gradient via la dérivée de la fonction d'activation.
         # Ici, on utilise la méthode backpropagation définie pour l'activation choisie.
         dactivation = self.activation.backpropagation(dvalues)
@@ -278,6 +253,7 @@ class Dense(Layer):
         return layer
 
 
+# A dictionary associating names of layers as strings with their class.
 layer_type_dict = {
     "dense": Dense
 }
