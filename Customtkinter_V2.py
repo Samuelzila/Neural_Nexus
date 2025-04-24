@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from customtkinter import CTkImage  # Assurez-vous que CTkImage est importé
+from customtkinter import CTkImage, CTkButton  # Assurez-vous que CTkImage est importé
 from PIL import Image, ImageTk, ImageDraw
 import numpy as np
 import emnist
@@ -23,8 +23,9 @@ font_Size_graph_catégorie = 6
 
 # Couleurs
 couleur1 = '#AA0505' #rouge
-couleur3 = '#6A0C0B' #rouge clair
 couleur2 = '#FBCA03' #jaune
+couleur3 = '#6A0C0B' #rouge clair
+
 
 # Configuration de l'apparence de CustomTkinter
 Page_wight = 1024
@@ -124,6 +125,118 @@ menu_frame = ctk.CTkFrame(
     fg_color=couleur3
 )   
 menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
+
+# Liste des options principales et leurs sous-options
+options = {
+    "Changer de modele": ["Modèle 1", "Modèle 2", "Modèle 3"],
+    "Changer couleur": ["Rouge", "Bleu", "Vert"],
+    "Changer le font": ["Arial", "Roboto", "Comic Sans"],
+    "Changer la taille": ["Petit", "Moyen", "Grand"],
+    "Changer la police": ["Gras", "Italique", "Souligné"]
+}
+# Liste pour stocker les boutons dynamiques
+listes_boutons_dynamiques = []
+
+#def Option1
+
+#def Option2
+
+#def Option3
+
+#def Option4
+
+#def Option5
+
+def clear_menu():
+    for bouton in listes_boutons_dynamiques:
+            bouton.destroy()
+    listes_boutons_dynamiques.clear()
+    
+def afficher_sous_options(option):
+    clear_menu()
+# Ajouter les sous-options
+    for sous_option in options[option]:
+        bouton_sous_option = ctk.CTkButton(
+            menu_frame,
+            text=sous_option,
+            command=afficher_Menu,  # Afficher la sélection   ##<<<<<<<<<<<<<< à finir
+            height=((768/4) / (len(options[option])+1)),
+            width=235,
+            text_color=couleur2,
+            hover_color=couleur1,
+            fg_color=couleur3,
+            font=(font_Type_default, 16),
+            corner_radius=30
+        )
+        bouton_sous_option.pack(padx=10, pady=1)
+        listes_boutons_dynamiques.append(bouton_sous_option)
+    bouton_retour = ctk.CTkButton(
+        menu_frame,
+        text="Retour",
+        command=afficher_options,  # Revenir au menu principal
+        height=((768/4) / (len(options[option])+1)),
+        width=235,
+        text_color=couleur2,
+        hover_color=couleur1,
+        fg_color=couleur3,
+        font=(font_Type_default, 16),
+        corner_radius=30
+    )
+    bouton_retour.pack(padx=10, pady=1)
+    listes_boutons_dynamiques.append(bouton_retour)
+
+def afficher_options():
+    clear_menu()
+# Ajouter les boutons principaux
+    for option in options.keys():
+        bouton_option = ctk.CTkButton(
+            menu_frame,
+            text=option,
+            command=lambda opt=option: afficher_sous_options(opt),  # Afficher les sous-options   #<<<<<<<<<< potentiellement bon
+            height=((768/4) / (len(options)+1)),
+            width=235,
+            text_color=couleur2,
+            hover_color=couleur1,
+            fg_color=couleur3,
+            font=(font_Type_default, 16),
+            corner_radius=30
+        )
+        bouton_option.pack(padx=10, pady=1)
+        listes_boutons_dynamiques.append(bouton_option)
+    bouton_retour = ctk.CTkButton(
+        menu_frame,
+        text="Retour",
+        command=afficher_Menu,  # Revenir au menu principal
+        height=((768/4) / (len(options)+1)),
+        width=235,
+        text_color=couleur2,
+        hover_color=couleur1,
+        fg_color=couleur3,
+        font=(font_Type_default, 16),
+        corner_radius=30
+    )
+    bouton_retour.pack(padx=10, pady=1)
+    listes_boutons_dynamiques.append(bouton_retour)
+        
+def afficher_Menu():
+    clear_menu()
+    bouton_menu = ctk.CTkButton(
+            menu_frame,
+            command=afficher_options,  # Afficher le menu principal
+            height=(768 / 4),
+            width=256,
+            text="Menu",
+            text_color=couleur2,
+            hover_color=couleur3,
+            bg_color=couleur1,
+            fg_color=couleur3,
+            font=(font_Type_default, 64),
+            corner_radius=30
+        )
+    bouton_menu.pack(expand=False)
+    listes_boutons_dynamiques.append(bouton_menu)
+
+afficher_Menu()
 
 # === Label pour le nom du model === #  #checked
 #dimension = 256x(768/16)
@@ -284,7 +397,7 @@ class DrawingApp(ctk.CTkFrame):
             fg_color="transparent",
             corner_radius=0
         )
-        graph_frame.pack(fill="both", padx=10, pady=10, expand=False)
+        graph_frame.pack(fill="both", padx=10, pady=16, expand=False)  #<<<<<<<<<<<<<<< ne pas toucher au pady (très précis)
 
         canvas = FigureCanvasTkAgg(fig, master=graph_frame)
         canvas.draw()
