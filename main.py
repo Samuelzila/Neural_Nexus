@@ -1,20 +1,9 @@
-from denserflow import layers, models
-import numpy as np
-import emnist
-np.random.seed(40)
+from denserflow import models
+import interface
 
-NeuralNexus = models.Sequential([
-    layers.Dense(128, activation="relu"),
-    layers.Dense(128, activation="relu"),
-    layers.Dense(47, activation="softmax")
-])
+# --- Load the interface --- #
+model = models.load_model("models/NeuralNexus0,8850528270419435.json")
+app = interface.DrawingApp(interface.canvas_frame, model)
+app.pack()
 
-NeuralNexus.compile("adam")
-
-for X, y in emnist.training_batched(10000):
-    NeuralNexus.fit(X, y,  epochs=50)
-    break
-
-X, y = emnist.test()
-pred = np.argmax(NeuralNexus(X), axis=1)
-print(np.mean(pred == y))
+interface.fenetre.mainloop()

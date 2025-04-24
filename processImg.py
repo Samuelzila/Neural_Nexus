@@ -1,3 +1,7 @@
+"""
+This file is currently unused in the code. It introduces functions to seperate characters in an image
+"""
+
 import array
 import cv2
 import numpy as np
@@ -22,8 +26,10 @@ def deskew(image):
     (h, w) = image.shape
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    rotated = cv2.warpAffine(
+        image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
     return rotated
+
 
 def preprocess_image(image_path):
     """
@@ -36,29 +42,31 @@ def preprocess_image(image_path):
     # Charger l'image en couleur
     image = cv2.imread(image_path)
     if image is None:
-        raise ValueError("L'image n'a pas pu être chargée. Vérifiez le chemin.")
+        raise ValueError(
+            "L'image n'a pas pu être chargée. Vérifiez le chemin.")
 
     # 1. Conversion en niveaux de gris
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
+
     # 2. Réduction du bruit avec un filtre médian
-    denoised = cv2.medianBlur(gray, 1)  # Taille du noyau = 3 (à ajuster selon l'image)
-    
+    # Taille du noyau = 3 (à ajuster selon l'image)
+    denoised = cv2.medianBlur(gray, 1)
+
     # 3. Binarisation avec l'algorithme d'Otsu
     # cv2.threshold retourne le seuil utilisé et l'image binaire
-    _, binary = cv2.threshold(denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    
+    _, binary = cv2.threshold(
+        denoised, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
     # 4. Correction de l'inclinaison (deskew)
-    deskewed =  binary
+    deskewed = binary
     # deskewed = deskew(binary)
     return deskewed
-
 
 
 def segment_lines(binary_img, min_line_height=10):
     """
     Segmente l'image binaire en lignes de texte à l'aide de l'histogramme horizontal.
-    
+
     :param binary_img: Image binaire (0 et 255) avec le texte en noir.
     :param min_line_height: Hauteur minimale pour considérer une région comme une ligne.
     :return: Liste de tuples (start_row, end_row) pour chaque ligne détectée.
@@ -87,7 +95,7 @@ def segment_lines(binary_img, min_line_height=10):
 def segment_words(line_img, min_word_width=5):
     """
     Segmente une ligne d'image en mots à l'aide de l'histogramme vertical.
-    
+
     :param line_img: Image binaire (d'une seule ligne) avec le texte en noir.
     :param min_word_width: Largeur minimale pour considérer une région comme un mot.
     :return: Liste de tuples (start_col, end_col) pour chaque mot détecté.
@@ -111,6 +119,7 @@ def segment_words(line_img, min_word_width=5):
         words.append((start, len(hist)))
     return words
 
+
 def avgLenght(charr):
     avg_lenght = 0
     for c in charr:
@@ -122,7 +131,7 @@ def avgLenght(charr):
 def ImgToChar(input_image_path, biais=0):
     # Chemin vers l'image
     # Biais pour ajuster la longeur d'un charactère
-    # Retourne un Array 2d de mots 
+    # Retourne un Array 2d de mots
 
     binary_img = preprocess_image(input_image_path)
     if binary_img is None:
@@ -143,25 +152,23 @@ def ImgToChar(input_image_path, biais=0):
         #
         CharacterImg = []
         last_place = 0
-        #print(f"Ligne {idx+1} - charactère détectés :", charr)
+        # print(f"Ligne {idx+1} - charactère détectés :", charr)
         for w_idx, (col_start, col_end) in enumerate(charr):
             word_img = line_img[:, col_start:col_end]
             CharacterImg.append(im.format_matrix(word_img))
 
-            #ajoute les mots
+            # ajoute les mots
             last_place = col_end
-            if(last_place-col_start)> avg_lenght + biais:
+            if (last_place-col_start) > avg_lenght + biais:
                 Mots.append(CharacterImg)
                 CharacterImg = []
             if w_idx + 1 == len(charr):
                 Mots.append(CharacterImg)
                 CharacterImg = []
-            
 
             # Sauvegarde de l'image de chaque mot
-            #word_filename = f"line{idx+1}_char{w_idx+1}.jpg"
-            #cv2.imwrite(word_filename, word_img)
-            #print("Mot sauvegardé :", word_filename)
+            # word_filename = f"line{idx+1}_char{w_idx+1}.jpg"
+            # cv2.imwrite(word_filename, word_img)
+            # print("Mot sauvegardé :", word_filename)
 
     return Mots
-    
