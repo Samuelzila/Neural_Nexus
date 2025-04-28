@@ -357,7 +357,7 @@ class DrawingApp(ctk.CTkFrame):
         time_label.configure(text=f"Temps de calcul : {elapsed_time:.2f}s")
 
         # Accéder aux probabilités de sortie
-        probabilities = prediction.flatten()
+        probabilities = np.array(prediction).flatten()
         labels = [emnist.label_to_char(i) for i in range(len(probabilities))]
 
         # Trier les probabilités et les étiquettes par ordre décroissant
