@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from customtkinter import CTkImage, CTkButton  # Assurez-vous que CTkImage est importé
+# Assurez-vous que CTkImage est importé
+from customtkinter import CTkImage, CTkButton
 from PIL import Image, ImageDraw
 import numpy as np
 import emnist
@@ -9,11 +10,11 @@ import time
 import image_processing
 
 # ======================================================================
-# === Configuration de l’apparence === #
+# === Style variables === #
 
 # Fonts
 font_Type_default = 'Roboto'  # Police par défaut
-# Poids de la police pour le label du modèle et du temps de calcul
+
 font_Weight_info_model_temps = 'bold'
 font_Size_info_model_temps = 16
 font_Size_result_Prediction_en_attente = 64
@@ -21,114 +22,112 @@ font_Size_result2_Ressayer = 112
 font_Size_result3_Reponse = 202
 font_Size_graph_catégorie = 6
 
-# Couleurs
-couleur1 = '#AA0505' #rouge
-couleur2 = '#FBCA03' #jaune
-couleur3 = '#6A0C0B' #rouge clair
+# Colours
+color1 = '#AA0505'  # red
+color2 = '#FBCA03'  # yellow
+color3 = '#6A0C0B'  # dark red
 
-# Configuration de l'apparence de CustomTkinter
-Page_wight = 1024
-Page_height = 768  # 1024/2 + 1024/4
-Page_grid_row = 16
-Page_grid_column = 16
+# Tkinter settings
+page_width = 1024
+page_height = 768  # 1024/2 + 1024/4
+page_grid_row = 16
+page_grid_column = 16
 
 # ======================================================================
 
-# Configuration de l’apparence
-ctk.set_appearance_mode("black")  # ou "light", "system"
-ctk.set_default_color_theme("blue")  # Thème global
+# Style configuration
+ctk.set_appearance_mode("black")  # Dark theme
+ctk.set_default_color_theme("blue")  # Global theme
 
-# === Configuration de la fenêtre principale === #
-fenetre = ctk.CTk()
+# === Main window === #
+fenetre = ctk.CTk(color3)
 fenetre.title("Reconnaissance de chiffres manuscrits")
-fenetre._fg_color = couleur3
 
-# main frame (big picture of the app) dimension = 1024x768   #checked
+# Main frame (big picture of the app) dimensions = 1024x768   #checked
 main_frame = ctk.CTkFrame(
     fenetre,
     width=1024,
     height=768,
-    fg_color=couleur1
+    fg_color=color1,
 )
-main_frame.pack(expand=False)  # Remplir l'espace disponible
+main_frame.pack(expand=True)  # Center with available space
 
-# Configurer une grille 16x16 pour main_frame   #checked
+# Configure 16x16 grid inside the main frame
 for i in range(16):
-    main_frame.grid_rowconfigure(i, weight=1)  # Chaque ligne a un poids égal
-    # Chaque colonne a un poids égal
+    main_frame.grid_rowconfigure(i, weight=1)
     main_frame.grid_columnconfigure(i, weight=1)
 
-# === Résultats affichés (1, 1) === #    #checked
-# dimension = 512x384
+# ===  Displayed results (1, 1) === #    #checked
+# dimensions = 512x384
 result_frame = ctk.CTkFrame(
     main_frame,
     width=512,
     height=384,
-    fg_color=couleur1
+    fg_color=color1
 )
 result_frame.grid(row=0, column=8, rowspan=8, columnspan=8,
-                  padx=10, pady=10)  # Ligne 39
+                  padx=10, pady=10)  # 39th row
 
-# === Label pour le résultat === #   #checked
-# dimension = 512x384
+# === Result label === #   #checked
+# dimensions = 512x384
 result_label = ctk.CTkLabel(
     result_frame,
-    text="Prediction\nen attente",  # Utiliser \n pour le saut de ligne
+    text="Prediction\nen attente",
     font=(font_Type_default, 64, "bold"),
     width=512,
     height=384,
-    text_color=couleur2,
+    text_color=color2,
     corner_radius=30,
-    fg_color=couleur3
+    fg_color=color3
 )
 result_label.pack(expand=False)
 
-# === Canvas pour le dessin (-1, 1) === # #checked
-# dimension = 512x3(768/4)
+# === Drawing canvas (-1, 1) === #checked
+# dimensions = 512x3(768/4)
 canvas_frame = ctk.CTkFrame(
     main_frame,
     width=512,
     height=(3*(768/4)),
-    fg_color=couleur1,
+    fg_color=color1,
     corner_radius=30
 )
 canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
 
-# === Frame vert (1, -1) === # #checked
+# === Statistics frame (1, -1) === #checked
 # dimension = 512x 3(768/8)
 statistics_frame = ctk.CTkFrame(
     main_frame,
     width=512,
     height=336,
     corner_radius=30,
-    fg_color=couleur3
+    fg_color=color3
 )
 statistics_frame.grid(row=8, column=8, rowspan=7,
                       columnspan=8, padx=10, pady=10)
 
-# === Frame bleu (-1, -1) === # #checked   mais je ne comprend pas pourquoi toute les autre frame ne sont pas affecter par la fonction corner_radius mais cette frame la oui
+# ===  AI input frame (preview) (-1, -1) === #checked
 # dimension = 512x(768/4)
 input_frame = ctk.CTkFrame(
     main_frame,
     width=256,
     height=(768/4),
     corner_radius=30,
-    fg_color=couleur3
+    fg_color=color3
 )
 input_frame.grid(row=12, column=4, rowspan=4, columnspan=4, padx=10, pady=10)
 
-# === Frame Menu === # # #checked
+# === Menu frame === # checked
 # dimension = 256x(768/4)
 menu_frame = ctk.CTkFrame(
     main_frame,
     width=256,
     height=(768/4),
     corner_radius=30,
-    fg_color=couleur3
+    fg_color=color3
 )
 menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 
-# Liste des options principales et leurs sous-options
+# Submenus
 options = {
     "Changer de modele": ["Modèle 1", "Modèle 2", "Modèle 3"],
     "Changer couleur": ["Rouge", "Bleu", "Vert"],
@@ -139,21 +138,23 @@ options = {
 # Liste pour stocker les boutons dynamiques
 listes_boutons_dynamiques = []
 
-#def Option1
+# def Option1
 
-#def Option2
+# def Option2
 
-#def Option3
+# def Option3
 
-#def Option4
+# def Option4
 
-#def Option5
+# def Option5
+
 
 def clear_menu():
     for bouton in listes_boutons_dynamiques:
-            bouton.destroy()
+        bouton.destroy()
     listes_boutons_dynamiques.clear()
-    
+
+
 def afficher_sous_options(option):
     clear_menu()
 # Ajouter les sous-options
@@ -164,9 +165,9 @@ def afficher_sous_options(option):
             command=afficher_Menu,  # Afficher la sélection   ##<<<<<<<<<<<<<< à finir
             height=((768/4) / (len(options[option])+1)),
             width=235,
-            text_color=couleur2,
-            hover_color=couleur1,
-            fg_color=couleur3,
+            text_color=color2,
+            hover_color=color1,
+            fg_color=color3,
             font=(font_Type_default, 16),
             corner_radius=30
         )
@@ -178,14 +179,15 @@ def afficher_sous_options(option):
         command=afficher_options,  # Revenir au menu principal
         height=((768/4) / (len(options[option])+1)),
         width=235,
-        text_color=couleur2,
-        hover_color=couleur1,
-        fg_color=couleur3,
+        text_color=color2,
+        hover_color=color1,
+        fg_color=color3,
         font=(font_Type_default, 16),
         corner_radius=30
     )
     bouton_retour.pack(padx=10, pady=1)
     listes_boutons_dynamiques.append(bouton_retour)
+
 
 def afficher_options():
     clear_menu()
@@ -194,12 +196,13 @@ def afficher_options():
         bouton_option = ctk.CTkButton(
             menu_frame,
             text=option,
-            command=lambda opt=option: afficher_sous_options(opt),  # Afficher les sous-options   #<<<<<<<<<< potentiellement bon
+            # Afficher les sous-options   #<<<<<<<<<< potentiellement bon
+            command=lambda opt=option: afficher_sous_options(opt),
             height=((768/4) / (len(options)+1)),
             width=235,
-            text_color=couleur2,
-            hover_color=couleur1,
-            fg_color=couleur3,
+            text_color=color2,
+            hover_color=color1,
+            fg_color=color3,
             font=(font_Type_default, 16),
             corner_radius=30
         )
@@ -211,67 +214,71 @@ def afficher_options():
         command=afficher_Menu,  # Revenir au menu principal
         height=((768/4) / (len(options)+1)),
         width=235,
-        text_color=couleur2,
-        hover_color=couleur1,
-        fg_color=couleur3,
+        text_color=color2,
+        hover_color=color1,
+        fg_color=color3,
         font=(font_Type_default, 16),
         corner_radius=30
     )
     bouton_retour.pack(padx=10, pady=1)
     listes_boutons_dynamiques.append(bouton_retour)
-        
+
+
 def afficher_Menu():
     clear_menu()
     bouton_menu = ctk.CTkButton(
-            menu_frame,
-            command=afficher_options,  # Afficher le menu principal
-            height=(768 / 4),
-            width=256,
-            text="Menu",
-            text_color=couleur2,
-            hover_color=couleur3,
-            bg_color=couleur1,
-            fg_color=couleur3,
-            font=(font_Type_default, 64),
-            corner_radius=30
-        )
+        menu_frame,
+        command=afficher_options,  # Afficher le menu principal
+        height=(768 / 4),
+        width=256,
+        text="Menu",
+        text_color=color2,
+        hover_color=color3,
+        bg_color=color1,
+        fg_color=color3,
+        font=(font_Type_default, 64),
+        corner_radius=30
+    )
     bouton_menu.pack(expand=False)
     listes_boutons_dynamiques.append(bouton_menu)
 
+
 afficher_Menu()
 
-# === Label pour le nom du model === #  #checked
-# dimension = 256x(768/16)
+# === Model name label === # checked
+# dimensions = 256x(768/16)
 model_label = ctk.CTkLabel(
     main_frame,
     text="Model : NeuralNexus0.87",
     font=(font_Type_default, font_Size_info_model_temps, "bold"),
     width=256,
     height=(768/16),
-    text_color=couleur2,
+    text_color=color2,
     corner_radius=20,
-    fg_color=couleur3
+    fg_color=color3
 )
 model_label.grid(row=15, column=8, rowspan=1, columnspan=4, padx=10, pady=10)
 
-# === Label pour le temps de calcul de la prediciton === # #checked
-# dimension = 256x(768/16)
+# === Computing time label === # #checked
+# dimensions = 256x(768/16)
 time_label = ctk.CTkLabel(
     main_frame,
     text="Temps de calcul : 0.0s",
     font=(font_Type_default, font_Size_info_model_temps, "bold"),
     width=256,
     height=(768/16),
-    text_color=couleur2,
+    text_color=color2,
     corner_radius=20,
-    fg_color=couleur3
+    fg_color=color3
 )
 time_label.grid(row=15, column=12, rowspan=1, columnspan=4, padx=10, pady=10)
 
-# === Classe pour le dessin et prédiction === #
-
 
 class DrawingApp(ctk.CTkFrame):
+    """
+    Main app class
+    """
+
     def __init__(self, parent, model):  # checked-ish
         super().__init__(parent)
         self.model = model
@@ -282,7 +289,7 @@ class DrawingApp(ctk.CTkFrame):
             self,
             width=self.canvas_width,
             height=self.canvas_height,
-            bg=couleur1
+            bg=color1
         )
         self.canvas.pack(fill='both', expand=False, padx=10, pady=10)
 
@@ -293,13 +300,17 @@ class DrawingApp(ctk.CTkFrame):
         self.last_x, self.last_y = None, None
         self.bind_events()
 
-    # Fonction pour lier les événements de la souris au canvas #checked-ish
     def bind_events(self):  # checked-ish
+        """
+        Bind mouse events to the drawing canvas
+        """
         self.canvas.bind("<B1-Motion>", self.draw_on_canvas)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
 
-    # Fonction appelée lorsque le bouton de la souris est enfoncé
     def draw_on_canvas(self, event):  # updated + checked
+        """
+        Called when the mouse is pressed in the canvas. Updates the image.
+        """
         radius = 30
         x0, y0 = event.x - radius, event.y - radius
         x1, y1 = event.x + radius, event.y + radius
@@ -307,26 +318,32 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas.create_oval(x0, y0, x1, y1, fill="white", outline="white")
         self.draw.ellipse([x0, y0, x1, y1], fill=0)
 
-        # Si un point précédent existe, dessiner une ligne entre les deux points
+        # If a previous position is recorded, draw a line between them.
         if self.last_x is not None and self.last_y is not None:
             self.canvas.create_line(
                 self.last_x, self.last_y, event.x, event.y, fill="white", width=radius * 2)
             self.draw.line([self.last_x, self.last_y, event.x,
                            event.y], fill=0, width=radius * 2)
 
-        # Mettre à jour les coordonnées du dernier point
+        # Record the coordinates of the mouse
         self.last_x, self.last_y = event.x, event.y
 
-    # Fonction appelée lorsque le bouton de la souris est relâché
     def on_release(self, event):  # checked
+        """
+        Called when the mouse is released.
+        """
+        # Reset mouse position
         self.last_x, self.last_y = None, None
+        # Try to identify the character
         try:
             self.predict()
         except Exception as e:
+            # Display error message in console and clear the canvas after 1 second.
             print("Erreur de prédiction :", e)
             self.canvas.after(1000, self.clear_canvas)
             result_label.configure(text="Nope.", font=(
-                font_Type_default, 90), text_color=couleur2, fg_color=couleur3)
+                font_Type_default, 90), text_color=color2, fg_color=color3)
+        # Clear the canvas after 1.5 seconds
         self.canvas.after(1500, self.clear_canvas)
 
     def clear_canvas(self):  # checked-ish
@@ -336,44 +353,49 @@ class DrawingApp(ctk.CTkFrame):
         self.draw = ImageDraw.Draw(self.image)
 
     def predict(self):
-        # Mesurer le temps de début
+        """
+        Send the canvas data to the model and update the interface to fit the predicion
+        """
+        # Start a timer
         start_time = time.time()
 
-        # Préparer l'image pour la prédiction
+        # Format the image before sending it to the model.
         matrix = image_processing.format_matrix(np.array(self.image))
 
         prediction = self.model(matrix.reshape(1, 784))
 
+        # Get the label of the character with the highest confidence
         character = emnist.label_to_char(np.argmax(prediction))
 
+        # Display the predicted character
         result_label.configure(text=f"{character}", font=(
-            "Comic sans ms", 202), text_color=couleur2, fg_color=couleur3)
+            "Comic sans ms", 202), text_color=color2, fg_color=color3)
 
-        # Calculer le temps de fin
+        # Measure the computation time
         end_time = time.time()
         elapsed_time = end_time - start_time
 
-        # Mettre à jour le time_label avec le temps de calcul
+        # Display the computation time in the interface
         time_label.configure(text=f"Temps de calcul : {elapsed_time:.2f}s")
 
-        # Accéder aux probabilités de sortie
+        # Get the confidence in every label
         probabilities = np.array(prediction).flatten()
         labels = [emnist.label_to_char(i) for i in range(len(probabilities))]
 
-        # Trier les probabilités et les étiquettes par ordre décroissant
+        # Sort the labels by confidence
         sorted_indices = np.argsort(probabilities)[::-1]
         top_indices = sorted_indices[:6]
         top_probabilities = probabilities[top_indices]
         top_labels = [labels[i] for i in top_indices]
 
-        # Créer un diagramme circulaire
+        # Display the labels in a pie chart
         dpi = 200
         figsize = (610 / dpi, 380 / dpi)
         fig = Figure(figsize=figsize, dpi=dpi)
-        fig.patch.set_facecolor(couleur3)
+        fig.patch.set_facecolor(color3)
 
         ax = fig.add_subplot(111)
-        ax.set_facecolor(couleur3)
+        ax.set_facecolor(color3)
 
         segment_colors = ['#D4342D', '#F3DDAC',
                           '#AA2822', '#E7BF71', '#8E0F06', '#C09645']
@@ -382,7 +404,7 @@ class DrawingApp(ctk.CTkFrame):
                startangle=90, colors=segment_colors, textprops=textprops)
         ax.axis('equal')
 
-        # Afficher le diagramme dans le frame vert (statistics_frame)
+        # Display the pie chart in the statistics frame
         for widget in statistics_frame.winfo_children():
             widget.destroy()
 
@@ -393,29 +415,26 @@ class DrawingApp(ctk.CTkFrame):
             fg_color="transparent",
             corner_radius=0
         )
-        graph_frame.pack(fill="both", padx=10, pady=16, expand=False)  #<<<<<<<<<<<<<<< ne pas toucher au pady (très précis)
+        # <<<<<<<<<<<<<<< Don't touch pady
+        graph_frame.pack(fill="both", padx=10, pady=16, expand=False)
 
         canvas = FigureCanvasTkAgg(fig, master=graph_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(expand=False)
 
-        # Convertir la matrice en image pour l'afficher dans le frame bleu (input_frame)
+        # Convert the formated image matrix in an image to display in the preview frame
         img_array = np.array(matrix)
-        # les dimensions sont durs à bien estimer si jamais y'a une a,mélioration à faire je suis preneur
         img_resized = Image.fromarray(img_array).resize((236, 172))
-
-        # Utiliser CTkImage au lieu de ImageTk.PhotoImage
-        # les dimensions sont durs à bien estimer si jamais y'a une a,mélioration à faire je suis preneur
         img_tk = CTkImage(light_image=img_resized, size=(236, 172))
 
         if hasattr(self, 'blue_frame_label'):
             self.blue_frame_label.configure(
-                image=img_tk, text="", fg_color=couleur3)
+                image=img_tk, text="", fg_color=color3)
         else:
             self.blue_frame_label = ctk.CTkLabel(
                 input_frame,
                 image=img_tk,
                 text="",
-                fg_color=couleur3
+                fg_color=color3
             )
             self.blue_frame_label.pack(padx=10, pady=10, expand=False)
