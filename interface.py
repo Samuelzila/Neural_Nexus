@@ -129,7 +129,7 @@ menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 
 # Submenus
 options = {
-    "Changer de modele": ["Modèle 1", "Modèle 2", "Modèle 3"],
+    "Changer de modele": ["Modèle 1", "Modèle 2", "Modèle 3", "Modèle 4", "Modèle 5", "Modèle 6"],
     "Changer couleur": ["Rouge", "Bleu", "Vert"],
     "Changer le font": ["Arial", "Roboto", "Comic Sans"],
     "Changer la taille": ["Petit", "Moyen", "Grand"],
@@ -138,15 +138,34 @@ options = {
 # Liste pour stocker les boutons dynamiques
 listes_boutons_dynamiques = []
 
-# def Option1
+app_instance = None  # Variable globale pour stocker l'instance de DrawingApp
 
-# def Option2
+def set_app_instance(app):
 
-# def Option3
+    #Définit l'instance globale de DrawingApp.
 
-# def Option4
+    global app_instance
+    app_instance = app
 
-# def Option5
+def fonction_bouton_modele(sous_option, label):
+    match sous_option:
+        case "Modèle 1":
+            app_instance.set_model(0, label)
+        case "Modèle 2":
+            app_instance.set_model(1, label)
+        case "Modèle 3":
+            app_instance.set_model(2, label)
+        case "Modèle 4":
+            app_instance.set_model(3, label)
+        case "Modèle 5":
+            app_instance.set_model(4, label)
+        case "Modèle 6":
+            app_instance.set_model(5, label)
+            
+    afficher_Menu()
+
+
+
 
 
 def clear_menu():
@@ -162,7 +181,10 @@ def afficher_sous_options(option):
         bouton_sous_option = ctk.CTkButton(
             menu_frame,
             text=sous_option,
-            command=afficher_Menu,  # Afficher la sélection   ##<<<<<<<<<<<<<< à finir
+            #command=afficher_Menu,  # Afficher la sélection   ##<<<<<<<<<<<<<< à finir
+            command=lambda opt=sous_option: fonction_bouton_modele(opt, model_label),
+
+            #command = fonction_sous_option(option,sous_option),  # Fonction à définir pour chaque sous-option
             height=((768/4) / (len(options[option])+1)),
             width=235,
             text_color=color2,
@@ -249,7 +271,7 @@ afficher_Menu()
 # dimensions = 256x(768/16)
 model_label = ctk.CTkLabel(
     main_frame,
-    text="Model : NeuralNexus0.87",
+    text="Model : v ej " ,
     font=(font_Type_default, font_Size_info_model_temps, "bold"),
     width=256,
     height=(768/16),
@@ -279,9 +301,10 @@ class DrawingApp(ctk.CTkFrame):
     Main app class
     """
 
-    def __init__(self, parent, model):  # checked-ish
+    def __init__(self, parent, modeles):  # checked-ish
         super().__init__(parent)
-        self.model = model
+        self.modeles = modeles
+        self.model = modeles[0]
         self.canvas_width = 572
         self.canvas_height = 606
 
@@ -306,6 +329,15 @@ class DrawingApp(ctk.CTkFrame):
         """
         self.canvas.bind("<B1-Motion>", self.draw_on_canvas)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
+        
+    def set_model(self, index, label=None):
+        if 0 <= index < len(self.modeles):
+            self.model = self.modeles[index]
+            print(f"Modèle changé : {self.model.name}")
+        if label:
+            label.configure(text=f"Model = {self.model.name}")
+        else:
+            print("Index invalide pour le modèle.")
 
     def draw_on_canvas(self, event):  # updated + checked
         """
