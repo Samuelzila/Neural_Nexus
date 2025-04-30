@@ -9,7 +9,6 @@ matrix = ip.format_matrix(matrix)
 
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 
 
@@ -62,6 +61,12 @@ def crop(matrix, padding=0, keep_centered=True):
     # Dimensions of the matrix
     m, n = matrix.shape
 
+    # Default values, if there is nothing to crop
+    argtop = 0
+    argbottom = m-1
+    argleft = 0
+    argright = n-1
+
     # Find where to crop on the top
     for i in reversed(range(m)):
         if np.all(matrix[:i+1] == 0):
@@ -74,24 +79,24 @@ def crop(matrix, padding=0, keep_centered=True):
             argbottom = i+1
             break
 
-    # Find where to crop on the right
+    # Find where to crop on the left
     for i in reversed(range(n)):
         if np.all(matrix[:, :i+1] == 0):
-            argright = i-1
+            argleft = i-1
             break
 
-    # Find where to crop on the left
+    # Find where to crop on the right
     for i in range(n):
         if np.all(matrix[:, i:] == 0):
-            argleft = i+1
+            argright = i+1
             break
 
     # Crop
     if not keep_centered:
-        matrix = matrix[argtop:argbottom+1, argright:argleft+1]
+        matrix = matrix[argtop:argbottom+1, argleft:argright+1]
     else:
         argtb = min(argtop, m-argbottom)
-        argrl = min(argright, n-argleft)
+        argrl = min(argleft, n-argright)
         matrix = matrix[argtb:m-argtb+1, argrl:n-argrl+1]
 
     # Add padding

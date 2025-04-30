@@ -98,7 +98,7 @@ canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
 statistics_frame = ctk.CTkFrame(
     main_frame,
     width=512,
-    height=336,
+    height=512,
     corner_radius=30,
     fg_color=color3
 )
