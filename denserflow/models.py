@@ -1,4 +1,4 @@
-from . import layers, optimizers
+from . import layers, optimizers, losses
 import os
 import json
 
@@ -29,7 +29,7 @@ class Sequential:
 
             y_pred = self(X)
 
-            loss_function = layers.CategoricalCrossEntropy()
+            loss_function = losses.CategoricalCrossEntropy()
 
             loss = loss_function(y_pred, y)
 
