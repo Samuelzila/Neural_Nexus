@@ -129,11 +129,11 @@ menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 
 # Submenus
 options = {
-    "Changer de modele": ["Modèle 1", "Modèle 2", "Modèle 3", "Modèle 4", "Modèle 5", "Modèle 6"],
-    "Changer couleur": ["Rouge", "Bleu", "Vert"],
-    "Changer le font": ["Arial", "Roboto", "Comic Sans"],
-    "Changer la taille": ["Petit", "Moyen", "Grand"],
-    "Changer la police": ["Gras", "Italique", "Souligné"]
+    "Changer de modele": ["NN.0,8850528270419435", "NN.0,884915279", "NN.0,884889", "NN.0,88", "NN.0,87", "always_right"],
+    "Changer couleur": ["Barbie", "Captain America", "Space", "Clouds", "hotwheels"],
+    "Changer le font": ["Arial", "Roboto", "Comic Sans", "Times New Roman", "Courier New", "Verdana"],
+    "Changer la taille": ["Petit", "Moyen", "Grand", "Très grand", "Géant"],
+    "Changer la police": ["Gras", "Italique", "Souligné", "Barré", "Normal"]
 }
 # Liste pour stocker les boutons dynamiques
 listes_boutons_dynamiques = []
@@ -147,32 +147,152 @@ def set_app_instance(app):
     global app_instance
     app_instance = app
 
-def fonction_bouton_modele(sous_option, label):
+def fonction_sous_option(option, sous_option):
+    print("fonction_sous_option : "+ option + " - " +sous_option)
+    if option == "Changer de modele":
+        fonction_bouton_modele(sous_option)
+        print("fonction_bouton_modele : "+ sous_option)
+    elif option == "Changer couleur":
+        fonction_bouton_couleur(sous_option)
+        print("fonction_bouton_couleur : "+ sous_option)
+    elif option == "Changer le font":
+        fonction_bouton_font(sous_option)
+        print("fonction_bouton_font : "+ sous_option)
+    elif option == "Changer la taille":
+        fonction_bouton_taille(sous_option)
+        print("fonction_bouton_taille : "+ sous_option)
+    elif option == "Changer la police":
+        fonction_bouton_police(sous_option)
+        print("fonction_bouton_police : "+ sous_option)
+    else:
+        print("Option non reconnue")
+
+def fonction_bouton_modele(sous_option):#done at all
+    print("fonction_bouton_modele : "+ sous_option)
     match sous_option:
-        case "Modèle 1":
-            app_instance.set_model(0, label)
-        case "Modèle 2":
-            app_instance.set_model(1, label)
-        case "Modèle 3":
-            app_instance.set_model(2, label)
-        case "Modèle 4":
-            app_instance.set_model(3, label)
-        case "Modèle 5":
-            app_instance.set_model(4, label)
-        case "Modèle 6":
-            app_instance.set_model(5, label)
+        case "NN.0,8850528270419435":
+            app_instance.set_model(0)
+        case "NN.0,884915279":
+            app_instance.set_model(1)
+        case "NN.0,884889":
+            app_instance.set_model(2)
+        case "NN.0,88":
+            app_instance.set_model(3)
+        case "NN.0,87":
+            app_instance.set_model(4)
+        case "always_right":
+            app_instance.set_model(5)
             
     afficher_Menu()
 
+def fonction_bouton_couleur(sous_option):#not done at all
+    print("fonction_bouton_couleur : "+ sous_option)
+    match sous_option:
+        case "Barbie":
+            color1 = "#E0218A"
+            color2 = "#ED5C9B"
+            color3 = "#F18DBC"
+            color4 = "#F7B9D7"
+            color5 = "#FACDE5"
+            print("barbie")
+        case "Captain America":
+            color1 = "#0E305D"
+            color2 = "#14406F"
+            color3 = "#F6F6F7"
+            color4 = "#BD142B"
+            color5 = "#7E1918"
+            print("captain america")
+        case "Space":
+            color1 = "#B8DBB0"
+            color2 = "#5DC1C0"
+            color3 = "#1198BE"
+            color4 = "#1553AA"
+            color5 = "#2B3686"
+            print("space")
+        case "Clouds":
+            color1 = "#0065E1"
+            color2 = "#0083EE"
+            color3 = "#00A0F6"
+            color4 = "#F7F4FF"
+            color5 = "#D6EAFB"
+            print("clouds")
+        case "hotwheels":
+            color1 = "#2C84C7"
+            color2 = "#4251AE"
+            color3 = "#F1D74D"
+            color4 = "#D42F41"
+            color5 = "#FD5C01"
+            print("hotwheels")
+            
+    afficher_Menu()
 
+def fonction_bouton_font(sous_option):# done at all
+    print("fonction_bouton_font : "+ sous_option)
+    match sous_option:
+        case "Arial":
+            font_Type_default = "Arial"
+            print("arial")
+        case "Roboto":
+            font_Type_default = "Roboto"
+            print("roboto")
+        case "Comic Sans":
+            font_Type_default = "Comic Sans MS"
+            print("comic sans")
+        case "Times New Roman":
+            font_Type_default = "Times New Roman"
+            print("times new roman")
+        case "Courier New":
+            font_Type_default = "Courier New"
+            print("courier new")
+        case "Verdana":
+            font_Type_default = "Verdana"
+            print("verdana")
+    afficher_Menu()
 
+def fonction_bouton_taille(sous_option):# done at all
+    print("fonction_bouton_taille : "+ sous_option)
+    match sous_option:
+        case "Petit":
+            font_Size_info_model_temps = 12
+            print("petit")
+        case "Moyen":
+            font_Size_info_model_temps = 16
+            print("moyen")
+        case "Grand":
+            font_Size_info_model_temps = 20
+            print("grand")
+        case "Très grand":
+            font_Size_info_model_temps = 24
+            print("très grand")
+        case "Géant":
+            font_Size_info_model_temps = 28
+            print("géant")
+    afficher_Menu()
 
+def fonction_bouton_police(sous_option):# done at all
+    print("fonction_bouton_police : "+ sous_option)
+    match sous_option:
+        case "Gras":
+            font_Weight_info_model_temps = "bold"
+            print("gras")
+        case "Italique":
+            font_Weight_info_model_temps = "italic"
+            print("italique")
+        case "Souligné":
+            font_Weight_info_model_temps = "underline"
+            print("souligné")
+        case "Barré":
+            font_Weight_info_model_temps = "strikethrough"
+            print("barré")
+        case "Normal":
+            font_Weight_info_model_temps = "normal"
+            print("normal")
+    afficher_Menu()
 
 def clear_menu():
     for bouton in listes_boutons_dynamiques:
         bouton.destroy()
     listes_boutons_dynamiques.clear()
-
 
 def afficher_sous_options(option):
     clear_menu()
@@ -181,10 +301,7 @@ def afficher_sous_options(option):
         bouton_sous_option = ctk.CTkButton(
             menu_frame,
             text=sous_option,
-            #command=afficher_Menu,  # Afficher la sélection   ##<<<<<<<<<<<<<< à finir
-            command=lambda opt=sous_option: fonction_bouton_modele(opt, model_label),
-
-            #command = fonction_sous_option(option,sous_option),  # Fonction à définir pour chaque sous-option
+            command=lambda opt=option, sous_opt=sous_option: fonction_sous_option(opt, sous_opt),
             height=((768/4) / (len(options[option])+1)),
             width=235,
             text_color=color2,
@@ -193,8 +310,10 @@ def afficher_sous_options(option):
             font=(font_Type_default, 16),
             corner_radius=30
         )
+        print("afficher_sous_option : "+ option + " - " +sous_option)
         bouton_sous_option.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton_sous_option)
+
     bouton_retour = ctk.CTkButton(
         menu_frame,
         text="Retour",
@@ -228,6 +347,7 @@ def afficher_options():
             font=(font_Type_default, 16),
             corner_radius=30
         )
+        print("afficher_option : "+ option)
         bouton_option.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton_option)
     bouton_retour = ctk.CTkButton(
@@ -271,7 +391,7 @@ afficher_Menu()
 # dimensions = 256x(768/16)
 model_label = ctk.CTkLabel(
     main_frame,
-    text="Model : v ej " ,
+    text="Model : NN.0,8850528270419435", 
     font=(font_Type_default, font_Size_info_model_temps, "bold"),
     width=256,
     height=(768/16),
@@ -330,14 +450,9 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas.bind("<B1-Motion>", self.draw_on_canvas)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
         
-    def set_model(self, index, label=None):
-        if 0 <= index < len(self.modeles):
-            self.model = self.modeles[index]
-            print(f"Modèle changé : {self.model.name}")
-        if label:
-            label.configure(text=f"Model = {self.model.name}")
-        else:
-            print("Index invalide pour le modèle.")
+    def set_model(self, index):
+        print(index)
+        
 
     def draw_on_canvas(self, event):  # updated + checked
         """
