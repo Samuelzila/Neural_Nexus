@@ -16,6 +16,7 @@ import image_processing
 font_Type_default = 'Roboto'  # Police par défaut
 
 font_Weight_info_model_temps = 'bold'
+
 font_Size_info_model_temps = 16
 font_Size_result_Prediction_en_attente = 64
 font_Size_result2_Ressayer = 112
@@ -26,6 +27,10 @@ font_Size_graph_catégorie = 6
 color1 = '#AA0505'  # red
 color2 = '#FBCA03'  # yellow
 color3 = '#6A0C0B'  # dark red
+color_canvas_bg = '#FFFFFF'  # white
+color_canvas_pen = '#AA0505'  # red
+color_graph_bg = '#6A0C0B'  # dark red
+color_app_border = '#AA0505'  # red
 
 # Tkinter settings
 page_width = 1024
@@ -131,9 +136,18 @@ menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 options = {
     "Changer de modele": ["NN.0,8850528270419435", "NN.0,884915279", "NN.0,884889", "NN.0,88", "NN.0,87", "always_right"],
     "Changer couleur": ["Barbie", "Captain America", "Space", "Clouds", "hotwheels"],
-    "Changer le font": ["Arial", "Roboto", "Comic Sans", "Times New Roman", "Courier New", "Verdana"],
+    "Changer le font": ["Arial", "Roboto", "Comic Sans Ms", "Times New Roman", "Courier New", "Verdana"],
     "Changer la taille": ["Petit", "Moyen", "Grand", "Très grand", "Géant"],
     "Changer la police": ["Gras", "Italique", "Souligné", "Barré", "Normal"]
+}
+
+# Dictionnaire pour mapper les catégories aux fonctions
+fonction_map = {
+    "Changer de modele": lambda sous_option: fonction_bouton_modele(sous_option),
+    "Changer couleur": lambda sous_option: fonction_bouton_couleur(sous_option),
+    "Changer le font": lambda sous_option: fonction_bouton_font(sous_option),
+    "Changer la taille": lambda sous_option: fonction_bouton_taille(sous_option),
+    "Changer la police": lambda sous_option: fonction_bouton_police(sous_option),
 }
 # Liste pour stocker les boutons dynamiques
 listes_boutons_dynamiques = []
@@ -148,27 +162,14 @@ def set_app_instance(app):
     app_instance = app
 
 def fonction_sous_option(option, sous_option):
-    print("fonction_sous_option : "+ option + " - " +sous_option)
-    if option == "Changer de modele":
-        fonction_bouton_modele(sous_option)
-        print("fonction_bouton_modele : "+ sous_option)
-    elif option == "Changer couleur":
-        fonction_bouton_couleur(sous_option)
-        print("fonction_bouton_couleur : "+ sous_option)
-    elif option == "Changer le font":
-        fonction_bouton_font(sous_option)
-        print("fonction_bouton_font : "+ sous_option)
-    elif option == "Changer la taille":
-        fonction_bouton_taille(sous_option)
-        print("fonction_bouton_taille : "+ sous_option)
-    elif option == "Changer la police":
-        fonction_bouton_police(sous_option)
-        print("fonction_bouton_police : "+ sous_option)
+    print(f"fonction_sous_option : {option} - {sous_option}")
+    if option in fonction_map:
+        fonction_map[option](sous_option)  # Appelle la fonction correspondante
     else:
         print("Option non reconnue")
 
-def fonction_bouton_modele(sous_option):#done at all
-    print("fonction_bouton_modele : "+ sous_option)
+def fonction_bouton_modele(sous_option):
+    print(f"fonction_bouton_modele : {sous_option}")
     match sous_option:
         case "NN.0,8850528270419435":
             app_instance.set_model(0)
@@ -182,52 +183,34 @@ def fonction_bouton_modele(sous_option):#done at all
             app_instance.set_model(4)
         case "always_right":
             app_instance.set_model(5)
-            
+    update_theme()
     afficher_Menu()
 
-def fonction_bouton_couleur(sous_option):#not done at all
-    print("fonction_bouton_couleur : "+ sous_option)
+def fonction_bouton_couleur(sous_option):
+    print(f"fonction_bouton_couleur : {sous_option}")
+    global color1, color2, color3
     match sous_option:
         case "Barbie":
-            color1 = "#E0218A"
-            color2 = "#ED5C9B"
-            color3 = "#F18DBC"
-            color4 = "#F7B9D7"
-            color5 = "#FACDE5"
+            color1, color2, color3 = "#E0218A", "#ED5C9B", "#F18DBC"
             print("barbie")
         case "Captain America":
-            color1 = "#0E305D"
-            color2 = "#14406F"
-            color3 = "#F6F6F7"
-            color4 = "#BD142B"
-            color5 = "#7E1918"
+            color1, color2, color3 = "#0E305D", "#14406F", "#F6F6F7"
             print("captain america")
         case "Space":
-            color1 = "#B8DBB0"
-            color2 = "#5DC1C0"
-            color3 = "#1198BE"
-            color4 = "#1553AA"
-            color5 = "#2B3686"
+            color1, color2, color3 = "#B8DBB0", "#5DC1C0", "#1198BE"
             print("space")
         case "Clouds":
-            color1 = "#0065E1"
-            color2 = "#0083EE"
-            color3 = "#00A0F6"
-            color4 = "#F7F4FF"
-            color5 = "#D6EAFB"
+            color1, color2, color3 = "#0065E1", "#0083EE", "#00A0F6"
             print("clouds")
         case "hotwheels":
-            color1 = "#2C84C7"
-            color2 = "#4251AE"
-            color3 = "#F1D74D"
-            color4 = "#D42F41"
-            color5 = "#FD5C01"
+            color1, color2, color3 = "#2C84C7", "#4251AE", "#F1D74D"
             print("hotwheels")
-            
+    update_theme()
     afficher_Menu()
 
-def fonction_bouton_font(sous_option):# done at all
-    print("fonction_bouton_font : "+ sous_option)
+def fonction_bouton_font(sous_option):
+    print(f"fonction_bouton_font : {sous_option}")
+    global font_Type_default
     match sous_option:
         case "Arial":
             font_Type_default = "Arial"
@@ -235,9 +218,9 @@ def fonction_bouton_font(sous_option):# done at all
         case "Roboto":
             font_Type_default = "Roboto"
             print("roboto")
-        case "Comic Sans":
+        case "Comic Sans Ms":
             font_Type_default = "Comic Sans MS"
-            print("comic sans")
+            print("comic sans Ms")
         case "Times New Roman":
             font_Type_default = "Times New Roman"
             print("times new roman")
@@ -247,6 +230,7 @@ def fonction_bouton_font(sous_option):# done at all
         case "Verdana":
             font_Type_default = "Verdana"
             print("verdana")
+    update_theme()
     afficher_Menu()
 
 def fonction_bouton_taille(sous_option):# done at all
@@ -267,6 +251,7 @@ def fonction_bouton_taille(sous_option):# done at all
         case "Géant":
             font_Size_info_model_temps = 28
             print("géant")
+    update_theme()
     afficher_Menu()
 
 def fonction_bouton_police(sous_option):# done at all
@@ -287,6 +272,7 @@ def fonction_bouton_police(sous_option):# done at all
         case "Normal":
             font_Weight_info_model_temps = "normal"
             print("normal")
+    update_theme()
     afficher_Menu()
 
 def clear_menu():
@@ -415,6 +401,56 @@ time_label = ctk.CTkLabel(
 )
 time_label.grid(row=15, column=12, rowspan=1, columnspan=4, padx=10, pady=10)
 
+def update_theme():
+    print("update_theme")
+
+    # Mettre à jour les couleurs globales
+    global color1, color2, color3, color_canvas_bg, color_canvas_pen, color_graph_bg, color_app_border
+
+    # Mettre à jour les frames
+    main_frame.configure(fg_color=color1)
+    result_frame.configure(fg_color=color1)
+    canvas_frame.configure(fg_color=color1)
+    statistics_frame.configure(fg_color=color3)
+    input_frame.configure(fg_color=color3)
+    menu_frame.configure(fg_color=color3)
+
+    # Mettre à jour les labels
+    result_label.configure(
+        text_color=color2,
+        fg_color=color3,
+        font=(font_Type_default, font_Size_result_Prediction_en_attente, "bold")
+    )
+    model_label.configure(
+        text_color=color2,
+        fg_color=color3,
+        font=(font_Type_default, font_Size_info_model_temps, "bold")
+    )
+    time_label.configure(
+        text_color=color2,
+        fg_color=color3,
+        font=(font_Type_default, font_Size_info_model_temps, "bold")
+    )
+
+    # Mettre à jour les boutons dynamiques
+    for bouton in listes_boutons_dynamiques:
+        bouton.configure(
+            text_color=color2,
+            hover_color=color1,
+            fg_color=color3,
+            font=(font_Type_default, 16)
+        )
+
+    # Mettre à jour le canvas
+    canvas_frame.configure(fg_color=color_canvas_bg)
+    app_instance.canvas.configure(bg=color_canvas_bg)
+
+    # Mettre à jour le contour de l'application
+    fenetre.configure(border_color=color_app_border)
+
+    app_instance.update()  # Met à jour l'interface via la méthode update()
+    
+    print("Thème mis à jour avec succès.")
 
 class DrawingApp(ctk.CTkFrame):
     """
@@ -425,8 +461,11 @@ class DrawingApp(ctk.CTkFrame):
         super().__init__(parent)
         self.modeles = modeles
         self.model = modeles[0]
+        self.model_name = self.model.name
         self.canvas_width = 572
         self.canvas_height = 606
+        
+        self.pen_color = color1
 
         self.canvas = ctk.CTkCanvas(
             self,
@@ -435,6 +474,14 @@ class DrawingApp(ctk.CTkFrame):
             bg=color1
         )
         self.canvas.pack(fill='both', expand=False, padx=10, pady=10)
+
+        def update(self):
+            """
+            Met à jour l'interface et applique les changements de thème.
+            """
+            print("Appel de update()")
+            update_theme()  # Appelle la fonction pour mettre à jour le thème
+            print("Thème mis à jour depuis update()")
 
         self.image = Image.new(
             "L", (self.canvas_width, self.canvas_height), color=255)
@@ -451,8 +498,18 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
         
     def set_model(self, index):
-        print(index)
+        self.model = self.modeles[index]
+        self.model_name = self.model.name
+        model_label.configure(text="Model : " + self.model_name,)
+        afficher_Menu()
+        print("set_model : " + index)
         
+    def set_pen_color(self, color):
+        """
+        Change la couleur du crayon.
+        """
+        self.pen_color = color
+        print(f"Couleur du crayon changée en : {self.pen_color}")
 
     def draw_on_canvas(self, event):  # updated + checked
         """
@@ -462,13 +519,13 @@ class DrawingApp(ctk.CTkFrame):
         x0, y0 = event.x - radius, event.y - radius
         x1, y1 = event.x + radius, event.y + radius
 
-        self.canvas.create_oval(x0, y0, x1, y1, fill="white", outline="white")
+        self.canvas.create_oval(x0, y0, x1, y1, fill=self.pen_color, outline=self.pen_color)
         self.draw.ellipse([x0, y0, x1, y1], fill=0)
 
         # If a previous position is recorded, draw a line between them.
         if self.last_x is not None and self.last_y is not None:
             self.canvas.create_line(
-                self.last_x, self.last_y, event.x, event.y, fill="white", width=radius * 2)
+                self.last_x, self.last_y, event.x, event.y, fill=self.pen_color, width=radius * 2)
             self.draw.line([self.last_x, self.last_y, event.x,
                            event.y], fill=0, width=radius * 2)
 
@@ -492,7 +549,7 @@ class DrawingApp(ctk.CTkFrame):
                 font_Type_default, 90), text_color=color2, fg_color=color3)
         # Clear the canvas after 1.5 seconds
         self.canvas.after(1500, self.clear_canvas)
-
+        
     def clear_canvas(self):  # checked-ish
         self.canvas.delete("all")
         self.image = Image.new(
@@ -516,7 +573,7 @@ class DrawingApp(ctk.CTkFrame):
 
         # Display the predicted character
         result_label.configure(text=f"{character}", font=(
-            "Comic sans ms", 202), text_color=color2, fg_color=color3)
+            font_Type_default, 202), text_color=color2, fg_color=color3)
 
         # Measure the computation time
         end_time = time.time()
