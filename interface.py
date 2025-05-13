@@ -78,7 +78,7 @@ result_frame = ctk.CTkFrame(
     height=384,
     fg_color=color1
 )
-result_frame.grid(row=0, column=8, rowspan=8, columnspan=8, padx=10, pady=10)
+result_frame.grid(row=0, column=8, rowspan=8, columnspan=8, padx=10, pady=10, sticky ="nsew")
 
 result_label = ctk.CTkLabel(
     result_frame,
@@ -90,7 +90,7 @@ result_label = ctk.CTkLabel(
     corner_radius=30,
     fg_color=color3
 )
-result_label.pack(expand=False)
+result_label.pack(expand=True)
 
 # Zone de dessin
 canvas_frame = ctk.CTkFrame(
@@ -110,7 +110,7 @@ statistics_frame = ctk.CTkFrame(
     corner_radius=30,
     fg_color=color3
 )
-statistics_frame.grid(row=8, column=8, rowspan=7, columnspan=8, padx=10, pady=10)
+statistics_frame.grid(row=8, column=8, rowspan=7, columnspan=8, padx=10, pady=10, sticky ="nsew")
 
 # Aperçu AI input
 input_frame = ctk.CTkFrame(
@@ -137,7 +137,7 @@ options = {
     "Changer de modele": ["NN.0,8850528270419435", "NN.0,884915279", "NN.0,884889", "NN.0,88", "NN.0,87", "always_right"],
     "Changer couleur": ["Barbie", "Captain America", "Sea", "Clouds", "Hot wheels"],
     "Changer le font": ["Arial", "Roboto", "Comic Sans Ms", "Times New Roman", "Courier New", "Verdana"],
-    "Changer la taille": ["Petit", "Moyen", "Grand", "Très grand", "Géant"],
+    "Changer la taille": ["Normal", "Moyen", "Grand", "Très grand", "Géant"],
     "Changer la police": ["Gras", "Italique", "Souligné", "Barré", "Normal"]
 }
 
@@ -151,6 +151,7 @@ Models = {
     "always_right": 5
 }
 
+#vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv     please dont touch colors 
 Themes = {
     "Clouds": ["#ADC5E0", "#8EACD3", "#DDE5F7", "#FCFEFF", "#E8F1FF", "#DEDEDE", "#C4D9F0"],
     "Sea": ["#B8DBB0", "#2B3686", "#5DC1C0", "#1553AA", "#1198BE", "#111636", "#0A223F"],
@@ -169,11 +170,11 @@ FontTypes = {
 }
 
 FontSizes = {
-    "Petit": 12,
-    "Moyen": 16,
-    "Grand": 20,
-    "Très grand": 24,
-    "Géant": 28
+    "Normal": 16,
+    "Moyen": 24,
+    "Grand": 36,
+    "Très grand": 48,
+    "Géant": 60
 }
 
 FontStyles = {
@@ -233,9 +234,11 @@ def fonction_bouton_font(sous_option):
 
 def fonction_bouton_taille(sous_option):
     print(f"fonction_bouton_taille : {sous_option}")
-    global font_Size
+    global font_Size, font_size_info_model
     if sous_option in FontSizes:
         font_Size = FontSizes[sous_option]
+        font_size_info_model = font_Size
+        print(font_size_info_model)
     else:
         print("Taille non reconnue")
     update_theme()
@@ -465,7 +468,7 @@ def update_theme():
     
     # --- Mise à jour des couleurs globales ---
     global color1, color2, color3, color4, color5, color6, color7
-    global font_default, font_size_info_model, font_size_prediction, font_size_retry, font_size_reponse, font_size_pie, font_style
+    global font_default, font_size_info_model, font_style
     
     # --- Mise à jour des frames ---
     main_frame.configure(fg_color=color1)
@@ -483,7 +486,9 @@ def update_theme():
     time_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_info_model, font_style))    
     
     # --- Mise à jour des boutons dynamiques ---
-    for bouton in listes_boutons_dynamiques:
+    listes_Temporaires = listes_boutons_dynamiques.copy()
+    listes_boutons_dynamiques.clear()
+    for bouton in listes_Temporaires:
         bouton.configure(
             text_color=color2,
             hover_color=color5,
@@ -491,6 +496,7 @@ def update_theme():
             bg_color=color1,
             font=(font_default, 16, font_style)
         )
+        listes_boutons_dynamiques.append(bouton)
     
     # --- Mise à jour du canvas ---
     # canvas_frame.configure(fg_color=color2)  # Optionnel si nécessaire
@@ -524,7 +530,7 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas = ctk.CTkCanvas(
             self, width=self.canvas_width, height=self.canvas_height, bg=color5
         )
-        self.canvas.pack(fill='both', expand=False, padx=10, pady=10)
+        self.canvas.pack(fill='both', expand=True, padx=10, pady=10)
 
         # ─── Liaison des événements souris ──────────────────
         self.bind_events()
@@ -666,11 +672,11 @@ class DrawingApp(ctk.CTkFrame):
         graph_frame = ctk.CTkFrame(
             statistics_frame, width=512, height=336, fg_color="transparent", corner_radius=0
         )
-        graph_frame.pack(fill="both", padx=10, pady=16, expand=False)
+        graph_frame.pack(fill="both", padx=10, pady=16, expand=True)
 
         canvas = FigureCanvasTkAgg(fig, master=graph_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(expand=False)
+        canvas.get_tk_widget().pack(expand=True)
 
     def update_preview(self, matrix):
         """Affiche un aperçu de l'image prétraitée."""
@@ -684,4 +690,4 @@ class DrawingApp(ctk.CTkFrame):
             self.input_frame_label = ctk.CTkLabel(
                 input_frame, image=img_tk, text="", fg_color=color3
             )
-            self.input_frame_label.pack(padx=10, pady=10, expand=False)
+            self.input_frame_label.pack(padx=10, pady=10, expand=True)
