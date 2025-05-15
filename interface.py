@@ -1,12 +1,9 @@
-import customtkinter as ctk
 from customtkinter import CTkImage, CTkButton
 from PIL import Image, ImageDraw
-import numpy as np
-import emnist
+import emnist, time, image_processing, numpy as np, customtkinter as ctk, os
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import time
-import image_processing
+from tkinterdnd2 import TkinterDnD, DND_FILES
 
 # ============================================================================
 # == STYLE CONFIGURATION =====================================================
@@ -47,6 +44,7 @@ GRID_COLUMNS = 16
 # ============================================================================
 
 ctk.set_appearance_mode("black")
+ctk.set_default_color_theme("dark-blue")
 
 # Main window
 fenetre = ctk.CTk("black")
@@ -71,6 +69,25 @@ for i in range(GRID_COLUMNS):
 # == FRAMES ET COMPOSANTS ====================================================
 # ============================================================================
 
+# Zone de dessin
+canvas_frame = ctk.CTkFrame(
+    main_frame,
+    width=512,
+    height=(3 * (PAGE_HEIGHT / 4)),
+    fg_color=color1,    
+    corner_radius=30
+)
+canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
+
+"""drop_frame = ctk.CTkFrame(
+    main_frame,
+    width=512,
+    height=( (PAGE_HEIGHT / 16)),
+    fg_color="transparent",
+    corner_radius=30
+    )
+drop_frame.grid(row=0, column=0, rowspan=1, columnspan=4, padx=10, pady=10)"""
+
 # Résultats prédits
 result_frame = ctk.CTkFrame(
     main_frame,
@@ -78,7 +95,7 @@ result_frame = ctk.CTkFrame(
     height=384,
     fg_color=color1
 )
-result_frame.grid(row=0, column=8, rowspan=8, columnspan=8, padx=10, pady=10, sticky ="nsew")
+result_frame.grid(row=0, column=8, rowspan=8, columnspan=8, padx=10, pady=10)
 
 result_label = ctk.CTkLabel(
     result_frame,
@@ -90,17 +107,7 @@ result_label = ctk.CTkLabel(
     corner_radius=30,
     fg_color=color3
 )
-result_label.pack(expand=True)
-
-# Zone de dessin
-canvas_frame = ctk.CTkFrame(
-    main_frame,
-    width=512,
-    height=(3 * (PAGE_HEIGHT / 4)),
-    fg_color=color1,
-    corner_radius=30
-)
-canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
+result_label.pack(expand=False)
 
 # Statistiques
 statistics_frame = ctk.CTkFrame(
@@ -112,16 +119,6 @@ statistics_frame = ctk.CTkFrame(
 )
 statistics_frame.grid(row=8, column=8, rowspan=7, columnspan=8, padx=10, pady=10, sticky ="nsew")
 
-# Aperçu AI input
-input_frame = ctk.CTkFrame(
-    main_frame,
-    width=256,
-    height=(PAGE_HEIGHT / 4),
-    corner_radius=30,
-    fg_color=color3
-)
-input_frame.grid(row=12, column=4, rowspan=4, columnspan=4, padx=10, pady=10)
-
 # Menu
 menu_frame = ctk.CTkFrame(
     main_frame,
@@ -132,6 +129,16 @@ menu_frame = ctk.CTkFrame(
 )
 menu_frame.grid(row=12, column=0, rowspan=4, columnspan=4, padx=10, pady=10)
 
+# Aperçu AI input
+input_frame = ctk.CTkFrame(
+    main_frame,
+    width=256,
+    height=(PAGE_HEIGHT / 4),
+    corner_radius=30,
+    fg_color=color3
+)
+input_frame.grid(row=12, column=4, rowspan=4, columnspan=4, padx=10, pady=10)
+
 # Sous-menus
 options = {
     "Changer de modele": ["NN.0,8850528270419435", "NN.0,884915279", "NN.0,884889", "NN.0,88", "NN.0,87", "always_right"],
@@ -140,7 +147,6 @@ options = {
     "Changer la taille": ["Normal", "Moyen", "Grand", "Très grand", "Géant"],
     "Changer la police": ["Gras", "Italique", "Souligné", "Barré", "Normal"]
 }
-
 # Dictionnaires de mapping
 Models = {
     "NN.0,8850528270419435": 0,
@@ -150,7 +156,6 @@ Models = {
     "NN.0,87": 4,
     "always_right": 5
 }
-
 #vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv     please dont touch colors 
 Themes = {
     "Clouds": ["#ADC5E0", "#8EACD3", "#DDE5F7", "#FCFEFF", "#E8F1FF", "#DEDEDE", "#C4D9F0"],
@@ -159,7 +164,6 @@ Themes = {
     "Barbie": ["#E0218A", "#ED5C9B", "#F18DBC", "#F7B9D7", "#FACDE5", "#5C0E39", "#FEE6F2"],
     "Hot wheels": [ "#4251AE", "#F1D74D", "#D42F41", "#D82804", "#FF6600", "#2C84C7"]
 }
-
 FontTypes = {
     "Arial": "Arial",
     "Roboto": "Roboto",
@@ -168,15 +172,13 @@ FontTypes = {
     "Courier New": "Courier New",
     "Verdana": "Verdana"
 }
-
 FontSizes = {
     "Normal": 16,
-    "Moyen": 24,
-    "Grand": 36,
-    "Très grand": 48,
-    "Géant": 60
+    "Moyen": 20,
+    "Grand": 30,
+    "Très grand": 40,
+    "Géant": 50
 }
-
 FontStyles = {
     "Gras": "bold",
     "Italique": "italic",
@@ -184,10 +186,8 @@ FontStyles = {
     "Barré": "strikethrough",
     "Normal": "normal"
 }
-
 # Variable globale pour stocker l'instance de l'application
 app_instance = None
-
 # Fonction pour assigner l'instance
 def set_app_instance(app):
     global app_instance
@@ -253,7 +253,6 @@ def fonction_bouton_police(sous_option):
         print("Taille non reconnue")
     update_theme()
     afficher_Menu()
-
 # Mapping option vers fonction
 fonction_map = {
     "Changer de modele": fonction_bouton_modele,
@@ -429,10 +428,8 @@ def afficher_Menu():
     )
     bouton_menu.pack(expand=False)
     listes_boutons_dynamiques.append(bouton_menu)
-
 # Lancer le menu principal
 afficher_Menu()
-
 # === Label pour le nom du modèle ===
 # Dimensions : 256x(768/16)
 model_label = ctk.CTkLabel(
@@ -447,7 +444,6 @@ model_label = ctk.CTkLabel(
 )
 # Placement avec la méthode grid
 model_label.grid(row=15, column=8, rowspan=1, columnspan=4, padx=10, pady=10)
-
 # === Label pour le temps de calcul ===
 # Dimensions : 256x(768/16)
 time_label = ctk.CTkLabel(
@@ -477,14 +473,15 @@ def update_theme():
     statistics_frame.configure(fg_color=color3)
     input_frame.configure(fg_color=color3)
     menu_frame.configure(fg_color=color3)
+    #drop_frame.configure(fg_color="transparent")
     
     # --- Mise à jour des labels ---
     result_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_prediction, font_style))
     
     model_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_info_model, font_style))
     
-    time_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_info_model, font_style))    
-    
+    time_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_info_model, font_style)) 
+        
     # --- Mise à jour des boutons dynamiques ---
     listes_Temporaires = listes_boutons_dynamiques.copy()
     listes_boutons_dynamiques.clear()
@@ -502,6 +499,8 @@ def update_theme():
     # canvas_frame.configure(fg_color=color2)  # Optionnel si nécessaire
     app_instance.canvas.configure(bg=color3)
     app_instance.set_pen_color(color5)
+    #app_instance.drop_zone.configure(text_color=color2,fg_color="transparent",font=(font_default, font_size_info_model, font_weight_default))
+
     
     # --- Mise à jour du contour de l'application ---
     fenetre.configure(border_color=color1, fg_color=color6)  # Met à jour l'interface via la méthode update()
@@ -521,6 +520,9 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas_width, self.canvas_height = 572, 606
         self.pen_color = color6
         self.last_x, self.last_y = None, None
+        
+        self.frame = ctk.CTkFrame(self, width=600, height=400)
+        self.frame.place(x=0, y=0)
 
         # ─── Initialisation de l'image PIL associée ──────────
         self.image = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
@@ -528,9 +530,25 @@ class DrawingApp(ctk.CTkFrame):
 
         # ─── Canvas de dessin ───────────────────────────────
         self.canvas = ctk.CTkCanvas(
-            self, width=self.canvas_width, height=self.canvas_height, bg=color5
+            self, 
+            width=self.canvas_width,
+            height=self.canvas_height,
+            bg=color5
         )
         self.canvas.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # ─── Zone de dépôt de fichier (par-dessus le canvas) ───
+        """drop_zone = ctk.CTkLabel(
+            drop_frame,
+            text="Déposez un fichier ici",
+            fg_color="transparent",
+            text_color=color2,
+            font=(font_default, font_size_info_model, font_weight_default)
+            )
+        drop_zone.grid(row=0, column=0)
+        
+        drop_zone.drop_target_register(DND_FILES)
+        drop_zone.dnd_bind('<<Drop>>', self.on_drop)"""
 
         # ─── Liaison des événements souris ──────────────────
         self.bind_events()
@@ -570,6 +588,8 @@ class DrawingApp(ctk.CTkFrame):
 
     def draw_on_canvas(self, event):
         """Trace un trait entre l'ancienne et la nouvelle position de la souris."""
+        #drop_frame.grid_forget()
+        
         radius = 30
         x0, y0 = event.x - radius, event.y - radius
         x1, y1 = event.x + radius, event.y + radius
@@ -591,6 +611,8 @@ class DrawingApp(ctk.CTkFrame):
 
     def on_release(self, event):
         """Appelé quand la souris est relâchée."""
+        #drop_frame.grid(row=0, column=0)
+        
         self.last_x, self.last_y = None, None
         try:
             self.predict()
@@ -598,9 +620,12 @@ class DrawingApp(ctk.CTkFrame):
         except Exception as e:
             print("Erreur de prédiction :", e)
             self.canvas.after(1000, self.clear_canvas)
-            result_label.configure(text="Nope.",
-                                   font=(font_default, font_size_retry, font_weight_default),
-                                   text_color=color2, fg_color=color3)
+            result_label.configure(
+                text="Nope.",
+                font=(font_default, font_size_retry, font_weight_default),
+                text_color=color2,
+                fg_color=color3
+                )
             self.canvas.after(1500, self.clear_canvas)
 
     def clear_canvas(self):
@@ -691,3 +716,13 @@ class DrawingApp(ctk.CTkFrame):
                 input_frame, image=img_tk, text="", fg_color=color3
             )
             self.input_frame_label.pack(padx=10, pady=10, expand=True)
+            
+    """def on_drop(self, event):
+        file_path = event.data
+        if os.path.isfile(file_path):
+            print(f"Fichier déposé : {file_path}")
+            print("Le fichier a bien été reçu !")
+            self.predict()
+            self.canvas.after(1000, self.clear_canvas)
+        else:
+            print("Le dépôt n'est pas un fichier valide.")"""

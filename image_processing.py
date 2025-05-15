@@ -163,30 +163,32 @@ def white_balance(matrix, flatten_colours=False):
     return matrix
 
 
+import numpy as np
+from scipy.ndimage import shift
+
 def center_image(matrix):
     """
-    Centers the image of a matrix
+    Centers the image of a matrix using center of mass and sub-pixel shifting.
     """
     m, n = matrix.shape
 
-    # Compute the center of mass (C_x, C_y)
-    C_x = 0
-    C_y = 0
-    for y in range(m):
-        for x in range(n):
-            C_x += (x-n/2)*matrix[y, x]
-            C_y += (y-m/2)*matrix[y, x]
-
+    # Compute total mass
     total_mass = np.sum(matrix)
+    if total_mass == 0:
+        return matrix
 
-    C_x /= total_mass
-    C_y /= total_mass
+    # Compute X and Y indices
+    Y, X = np.indices((m, n))
 
-    # Translate the elements of the matrix along the negative center of mass.
-    matrix = np.roll(matrix, -round(C_y), axis=0)
-    matrix = np.roll(matrix, -round(C_x), axis=1)
+    # Compute center of mass
+    C_x = np.sum((X - n / 2) * matrix) / total_mass
+    C_y = np.sum((Y - m / 2) * matrix) / total_mass
 
-    return matrix
+    # Apply sub-pixel shift to center the image
+    centered_matrix = shift(matrix, shift=(-C_y, -C_x), mode='nearest')
+
+    return centered_matrix
+
 
 
 def bicubic_resize(matrix, size_x):
