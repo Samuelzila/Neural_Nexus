@@ -1,13 +1,12 @@
-"""
-Basic usage:
+"""#Basic usage:
 
 import image_processing as ip
 
 matrix = ip.matrix_from_path("./image.png")
-matrix = ip.format_matrix(matrix)
-"""
+matrix = ip.format_matrix(matrix)"""
 
-from PIL import Image
+
+from PIL import Image,ImageOps
 import numpy as np
 import math
 
@@ -17,8 +16,11 @@ def matrix_from_path(path):
     With a given path, converts an image into a numpy matrix adn return it.
     """
     with Image.open(path) as img:
-        img = img.convert("L")
-        return np.array(img)
+        img = img.convert("L")  # <-- convertit en niveaux de gris (0-255)
+        img = ImageOps.invert(img)
+        img = img.resize((28, 28))
+        img = np.array(img)/255
+        return img
 
 
 def format_matrix(matrix, flatten=False):
@@ -57,6 +59,9 @@ def crop(matrix, padding=0, keep_centered=True):
     Padding tells how many empty rows and columns to leave on each side.
     If keep cenetered is true, it won't crop in a way that would uncenter the image.
     """
+    
+    if np.all(matrix == 0):
+        return matrix
 
     # Dimensions of the matrix
     m, n = matrix.shape
@@ -203,6 +208,8 @@ def bicubic_resize(matrix, size_x):
 
     image = Image.fromarray(matrix)
 
-    image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
+    #image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
+    image = image.resize((size_x, size_x), Image.Resampling.BICUBIC)
+
 
     return np.array(image)

@@ -1,9 +1,10 @@
 from customtkinter import CTkImage, CTkButton
 from PIL import Image, ImageDraw
-import emnist, time, image_processing, numpy as np, customtkinter as ctk, os
+import emnist, time, image_processing as ip, numpy as np, customtkinter as ctk, os
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinterdnd2 import TkinterDnD, DND_FILES
+
 
 # ============================================================================
 # == STYLE CONFIGURATION =====================================================
@@ -47,8 +48,10 @@ ctk.set_appearance_mode("black")
 ctk.set_default_color_theme("dark-blue")
 
 # Main window
-fenetre = ctk.CTk("black")
+fenetre = TkinterDnD.Tk()
 fenetre.title("Reconnaissance de chiffres manuscrits")
+fenetre.configure(bg=color5)
+
 
 # Main Frame
 main_frame = ctk.CTkFrame(
@@ -79,14 +82,14 @@ canvas_frame = ctk.CTkFrame(
 )
 canvas_frame.grid(row=0, column=0, rowspan=12, columnspan=8, padx=10, pady=10)
 
-"""drop_frame = ctk.CTkFrame(
+drop_frame = ctk.CTkFrame(
     main_frame,
     width=512,
     height=( (PAGE_HEIGHT / 16)),
     fg_color="transparent",
     corner_radius=30
     )
-drop_frame.grid(row=0, column=0, rowspan=1, columnspan=4, padx=10, pady=10)"""
+drop_frame.grid(row=0, column=0, rowspan=1, columnspan=4, padx=0, pady=0)
 
 # Résultats prédits
 result_frame = ctk.CTkFrame(
@@ -473,7 +476,7 @@ def update_theme():
     statistics_frame.configure(fg_color=color3)
     input_frame.configure(fg_color=color3)
     menu_frame.configure(fg_color=color3)
-    #drop_frame.configure(fg_color="transparent")
+    drop_frame.configure(fg_color="transparent")
     
     # --- Mise à jour des labels ---
     result_label.configure( text_color=color2, fg_color=color3, font=(font_default, font_size_prediction, font_style))
@@ -499,11 +502,11 @@ def update_theme():
     # canvas_frame.configure(fg_color=color2)  # Optionnel si nécessaire
     app_instance.canvas.configure(bg=color3)
     app_instance.set_pen_color(color5)
-    #app_instance.drop_zone.configure(text_color=color2,fg_color="transparent",font=(font_default, font_size_info_model, font_weight_default))
+    app_instance.drop_zone.configure(text_color=color2,fg_color="transparent",font=(font_default, font_size_info_model, font_weight_default))
 
     
     # --- Mise à jour du contour de l'application ---
-    fenetre.configure(border_color=color1, fg_color=color6)  # Met à jour l'interface via la méthode update()
+    fenetre.configure(bg = color5)  # Met à jour l'interface via la méthode update()
     
     print("Thème mis à jour avec succès.")
 
@@ -538,17 +541,17 @@ class DrawingApp(ctk.CTkFrame):
         self.canvas.pack(fill='both', expand=True, padx=10, pady=10)
         
         # ─── Zone de dépôt de fichier (par-dessus le canvas) ───
-        """drop_zone = ctk.CTkLabel(
+        self.drop_zone = ctk.CTkLabel(
             drop_frame,
             text="Déposez un fichier ici",
             fg_color="transparent",
             text_color=color2,
             font=(font_default, font_size_info_model, font_weight_default)
             )
-        drop_zone.grid(row=0, column=0)
+        self.drop_zone.grid(row=0, column=0)
         
-        drop_zone.drop_target_register(DND_FILES)
-        drop_zone.dnd_bind('<<Drop>>', self.on_drop)"""
+        self.drop_zone.drop_target_register(DND_FILES)
+        self.drop_zone.dnd_bind('<<Drop>>', self.on_drop)
 
         # ─── Liaison des événements souris ──────────────────
         self.bind_events()
@@ -588,7 +591,7 @@ class DrawingApp(ctk.CTkFrame):
 
     def draw_on_canvas(self, event):
         """Trace un trait entre l'ancienne et la nouvelle position de la souris."""
-        #drop_frame.grid_forget()
+        
         
         radius = 30
         x0, y0 = event.x - radius, event.y - radius
@@ -611,11 +614,11 @@ class DrawingApp(ctk.CTkFrame):
 
     def on_release(self, event):
         """Appelé quand la souris est relâchée."""
-        #drop_frame.grid(row=0, column=0)
         
         self.last_x, self.last_y = None, None
         try:
-            self.predict()
+            matrix = ip.format_matrix(np.array(self.image))
+            self.predict(matrix)
             self.canvas.after(1000, self.clear_canvas)
         except Exception as e:
             print("Erreur de prédiction :", e)
@@ -639,14 +642,13 @@ class DrawingApp(ctk.CTkFrame):
     # PREDICTION ET AFFICHAGE
     # ──────────────────────────────────────────────────────────────
 
-    def predict(self):
+    def predict(self, matrix):
         """Envoie l'image au modèle et met à jour l'interface avec le résultat."""
 
         # Chronométrage
         start_time = time.time()
 
         # Prétraitement de l'image
-        matrix = image_processing.format_matrix(np.array(self.image))
         prediction = self.model(matrix.reshape(1, 784))
         character = emnist.label_to_char(np.argmax(prediction))
 
@@ -665,6 +667,10 @@ class DrawingApp(ctk.CTkFrame):
         # Affichage statistiques
         self.display_statistics(prediction)
 
+        import matplotlib.pyplot as plt
+
+        plt.imshow(matrix, cmap='gray')
+        plt.show()
         # Aperçu image
         self.update_preview(matrix)
 
@@ -717,12 +723,14 @@ class DrawingApp(ctk.CTkFrame):
             )
             self.input_frame_label.pack(padx=10, pady=10, expand=True)
             
-    """def on_drop(self, event):
+    def on_drop(self, event):
         file_path = event.data
         if os.path.isfile(file_path):
             print(f"Fichier déposé : {file_path}")
             print("Le fichier a bien été reçu !")
-            self.predict()
+            matrix = ip.matrix_from_path(file_path)
+            matrix = ip.format_matrix(matrix)
+            self.predict(matrix)
             self.canvas.after(1000, self.clear_canvas)
         else:
-            print("Le dépôt n'est pas un fichier valide.")"""
+            print("Le dépôt n'est pas un fichier valide.")
