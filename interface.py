@@ -667,12 +667,19 @@ class DrawingApp(ctk.CTkFrame):
         # Affichage statistiques
         self.display_statistics(prediction)
 
-        import matplotlib.pyplot as plt
 
+        #Décommenter pour voir l'input détaillé du modèle
+        """
+        import matplotlib.pyplot as plt
+        
         plt.imshow(matrix, cmap='gray')
         plt.show()
+        """
+        
         # Aperçu image
         self.update_preview(matrix)
+        
+
 
     def display_statistics(self, prediction):
         """Affiche un graphique circulaire des 6 meilleures prédictions."""
