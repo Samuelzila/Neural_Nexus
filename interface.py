@@ -197,63 +197,55 @@ def set_app_instance(app):
     app_instance = app
 
 def fonction_sous_option(option, sous_option):
-    print(f"fonction_sous_option : {option} - {sous_option}")
     if option in fonction_map:
         fonction_map[option](sous_option)
     else:
-        print("Option non reconnue")
+        print(f"Option {option} non reconnue")
 
 def fonction_bouton_modele(sous_option):
-    print(f"fonction_bouton_modele : {sous_option}")
     if sous_option in Models:
         app_instance.set_model(Models[sous_option])
     else:
-        print("Modèle non reconnu")
+        print(f"Modèle {sous_option} non reconnu")
     update_theme()
     afficher_Menu()
 
 def fonction_bouton_couleur(sous_option):
-    print(f"fonction_bouton_couleur : {sous_option}")
     global color1, color2, color3, color4, color5, color6, color7
     if sous_option in Themes:
         couleurs = Themes[sous_option]
         couleurs_complètes = [couleurs[i % len(couleurs)] for i in range(7)]
         color1, color2, color3, color4, color5, color6, color7 = couleurs_complètes
-        print(f"Couleurs appliquées : {color1}, {color2}, {color3}, {color4}, {color5}, {color6}, {color7}")
     else:
-        print("Thème non reconnu")
+        print(f"Thème {sous_option} non reconnu")
     update_theme()
     afficher_Menu()
 
 def fonction_bouton_font(sous_option):
-    print(f"fonction_bouton_font : {sous_option}")
     global font_default
     if sous_option in FontTypes:
         font_default = FontTypes[sous_option]
     else:
-        print("Font non reconnue")
+        print(f"Police {sous_option} non reconnue")
     update_theme()
     afficher_Menu()
 
 def fonction_bouton_taille(sous_option):
-    print(f"fonction_bouton_taille : {sous_option}")
     global font_Size, font_size_info_model
     if sous_option in FontSizes:
         font_Size = FontSizes[sous_option]
         font_size_info_model = font_Size
-        print(font_size_info_model)
     else:
-        print("Taille non reconnue")
+        print(f"Taille {sous_option} non reconnue")
     update_theme()
     afficher_Menu()
 
 def fonction_bouton_police(sous_option):
-    print(f"fonction_bouton_taille : {sous_option}")
     global font_style
     if sous_option in FontStyles:
         font_style = FontStyles[sous_option]
     else:
-        print("Taille non reconnue")
+        print(f"Style de police {sous_option} non reconnu")
     update_theme()
     afficher_Menu()
 # Mapping option vers fonction
@@ -287,7 +279,6 @@ def afficher_sous_options(option):
             font=(font_default, 16, "bold"),
             corner_radius=30
         )
-        print("afficher_sous_option : "+ option + " - " +sous_option)
         bouton_sous_option.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton_sous_option)
     bouton_retour = ctk.CTkButton(
@@ -321,7 +312,6 @@ def afficher_options():
             font=(font_default, 16),
             corner_radius=30
         )
-        print("afficher_option : "+ option)
         bouton_option.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton_option)
     bouton_retour = ctk.CTkButton(
@@ -361,7 +351,6 @@ def afficher_sous_options(option):
             font=(font_default, 16, "bold"),
             corner_radius=30
         )
-        print(f"afficher_sous_option : {option} - {sous_option}")
         bouton.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton)
 
@@ -395,7 +384,6 @@ def afficher_options():
             font=(font_default, 16),
             corner_radius=30
         )
-        print(f"afficher_option : {option}")
         bouton.pack(padx=10, pady=1)
         listes_boutons_dynamiques.append(bouton)
 
@@ -463,7 +451,6 @@ time_label = ctk.CTkLabel(
 time_label.grid(row=15, column=12, rowspan=1, columnspan=4, padx=10, pady=10)
 
 def update_theme():
-    print("Mise à jour du thème...")
     
     # --- Mise à jour des couleurs globales ---
     global color1, color2, color3, color4, color5, color6, color7
@@ -508,7 +495,6 @@ def update_theme():
     # --- Mise à jour du contour de l'application ---
     fenetre.configure(bg = color5)  # Met à jour l'interface via la méthode update()
     
-    print("Thème mis à jour avec succès.")
 
 class DrawingApp(ctk.CTkFrame):
     """Application de dessin et prédiction de caractères manuscrits."""
@@ -578,12 +564,10 @@ class DrawingApp(ctk.CTkFrame):
         self.model_name = self.model.name
         model_label.configure(text=f"Model : {self.model_name}")
         afficher_Menu()
-        print(f"set_model : {index}")
 
     def set_pen_color(self, color):
         """Change la couleur du crayon."""
         self.pen_color = color
-        print(f"Couleur du crayon changée en : {self.pen_color}")
 
     # ──────────────────────────────────────────────────────────────
     # DESSIN
@@ -633,7 +617,6 @@ class DrawingApp(ctk.CTkFrame):
 
     def clear_canvas(self):
         """Efface le canvas et réinitialise l'image."""
-        print("Nettoyage du canvas")
         self.canvas.delete("all")
         self.image = Image.new("L", (self.canvas_width, self.canvas_height), color=255)
         self.draw = ImageDraw.Draw(self.image)
@@ -733,11 +716,9 @@ class DrawingApp(ctk.CTkFrame):
     def on_drop(self, event):
         file_path = event.data
         if os.path.isfile(file_path):
-            print(f"Fichier déposé : {file_path}")
-            print("Le fichier a bien été reçu !")
             matrix = ip.matrix_from_path(file_path)
             matrix = ip.format_matrix(matrix)
             self.predict(matrix)
             self.canvas.after(1000, self.clear_canvas)
         else:
-            print("Le dépôt n'est pas un fichier valide.")
+            print(f"Le dépôt n'est pas un fichier valide. {file_path=}")
