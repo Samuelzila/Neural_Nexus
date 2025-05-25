@@ -51,3 +51,4 @@ try:
 
 except KeyboardInterrupt:
     cleanup(model)
+    exit(0)
