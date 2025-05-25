@@ -17,10 +17,7 @@ def matrix_from_path(path):
     """
     with Image.open(path) as img:
         img = img.convert("L")  # <-- convertit en niveaux de gris (0-255)
-        img = ImageOps.invert(img)
-        img = img.resize((28, 28))
-        img = np.array(img)/255
-        return img
+        return np.array(img)
 
 
 def format_matrix(matrix, flatten=False):
@@ -168,8 +165,6 @@ def white_balance(matrix, flatten_colours=False):
     return matrix
 
 
-import numpy as np
-from scipy.ndimage import shift
 
 def center_image(matrix):
     """
@@ -189,10 +184,11 @@ def center_image(matrix):
     C_x = np.sum((X - n / 2) * matrix) / total_mass
     C_y = np.sum((Y - m / 2) * matrix) / total_mass
 
-    # Apply sub-pixel shift to center the image
-    centered_matrix = shift(matrix, shift=(-C_y, -C_x), mode='nearest')
+    # Translate the elements of the matrix along the negative center of mass.
+    matrix = np.roll(matrix, -round(C_y), axis=0)
+    matrix = np.roll(matrix, -round(C_x), axis=1)
 
-    return centered_matrix
+    return matrix
 
 
 
