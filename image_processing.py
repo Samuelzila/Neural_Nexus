@@ -6,7 +6,7 @@ matrix = ip.matrix_from_path("./image.png")
 matrix = ip.format_matrix(matrix)"""
 
 
-from PIL import Image,ImageOps
+from PIL import Image, ImageOps
 import numpy as np
 import math
 
@@ -56,7 +56,7 @@ def crop(matrix, padding=0, keep_centered=True):
     Padding tells how many empty rows and columns to leave on each side.
     If keep cenetered is true, it won't crop in a way that would uncenter the image.
     """
-    
+
     if np.all(matrix == 0):
         return matrix
 
@@ -115,18 +115,18 @@ def make_square(matrix):
     From an input matrix, make it square by adding empty rows or columns
     """
     m, n = matrix.shape
-    η = max(m, n)  # Final dimensions.
+    final_dimension = max(m, n)
     # Add rows if necessary
-    if m < η:
-        rows = np.zeros((math.floor((η-m)/2), n))
+    if m < final_dimension:
+        rows = np.zeros((math.floor((final_dimension-m)/2), n))
         matrix = np.append(matrix, rows, axis=0)
-        rows = np.zeros((math.ceil((η-m)/2), n))
+        rows = np.zeros((math.ceil((final_dimension-m)/2), n))
         matrix = np.append(rows, matrix, axis=0)
     # Add columns if necessary
-    if n < η:
-        cols = np.zeros((m, math.floor((η-n)/2)))
+    if n < final_dimension:
+        cols = np.zeros((m, math.floor((final_dimension-n)/2)))
         matrix = np.append(matrix, cols, axis=1)
-        cols = np.zeros((m, math.ceil((η-n)/2)))
+        cols = np.zeros((m, math.ceil((final_dimension-n)/2)))
         matrix = np.append(cols, matrix, axis=1)
 
     return matrix
@@ -165,7 +165,6 @@ def white_balance(matrix, flatten_colours=False):
     return matrix
 
 
-
 def center_image(matrix):
     """
     Centers the image of a matrix using center of mass and sub-pixel shifting.
@@ -191,7 +190,6 @@ def center_image(matrix):
     return matrix
 
 
-
 def bicubic_resize(matrix, size_x):
     """
     Resizes a matrix using the bicubic algorithm.
@@ -204,8 +202,7 @@ def bicubic_resize(matrix, size_x):
 
     image = Image.fromarray(matrix)
 
-    #image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
+    # image = image.resize((size_x, size_y), Image.Resampling.BICUBIC)
     image = image.resize((size_x, size_x), Image.Resampling.BICUBIC)
-
 
     return np.array(image)
